@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MeetMap</string>
+    <string name="web_client_id">409555274758-6qdljvmd0rv0sdsm7730el10n6kpfj9d.apps.googleusercontent.com</string>
+    <string name="login">Log in with Google </string>
+    <string name="title_activity_main_menu">Main_menu</string>
+    <string name="back">Back</string>
+    <string name="name_of_plase"></string>
+    <string name="fromchosedata">Выберите дату начала </string>
+    <string name="tochosedata">Когда метка удалится ?</string>
+    <string name="chosetime">Выберите время </string>
+    <string name="time">Время: %02d:%02d</string>
+    <string name="places">Больше мест</string>
+    <string name="place">Мест</string>
+    <string name="publick">Доступная всем</string>
+    <string name="pravet">Приватная метка</string>
+
+</resources>
