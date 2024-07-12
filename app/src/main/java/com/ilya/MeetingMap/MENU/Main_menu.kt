@@ -151,79 +151,23 @@ class Main_menu : ComponentActivity() {
     @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     fun MapScreen() {
-        val locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-
-        var lastLocation: Location? by remember { mutableStateOf(null) }
-        var lastLocationTime: Long by remember { mutableStateOf(0) }
-        var mapProperties by remember { mutableStateOf<MapProperties?>(null) }
-        var uiSettings by remember { mutableStateOf<MapUiSettings?>(null) }
-        var isMyLocationEnabled by remember { mutableStateOf(false) }
-        var mapType by remember { mutableStateOf(com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL) }
-        var userLocation by remember { mutableStateOf<LatLng?>(null) }
-        var userSpeed by remember { mutableStateOf(0f) } // Состояние для хранения скорости
-
-        var mapState by remember { mutableStateOf(MapViewState()) }
+        val context = LocalContext.current
+        val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+        val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
         val coroutineScope = rememberCoroutineScope()
 
-        val locationCallback = remember {
-            object : LocationCallback() {
-                override fun onLocationResult(result: LocationResult) {
-                    result.lastLocation?.let { currentLocation ->
-                        userLocation = LatLng(currentLocation.latitude, currentLocation.longitude)
+        var userLocation by remember { mutableStateOf<LatLng?>(null) }
 
-                        // Расчет скорости (без проверки hasSpeed())
-                        if (lastLocation != null) {
-                            val distance = currentLocation.distanceTo(lastLocation!!)
-                            val timeElapsed = (currentLocation.time - lastLocationTime) / 1000.0
-                            userSpeed = (distance / timeElapsed).toFloat()
-                        }
-
-                        lastLocation = currentLocation
-                        lastLocationTime = currentLocation.time
-
-                        // Обновляем mapState
-                        mapState = mapState.copy(userLocation = userLocation)
-                    }
-                }
-            }
-        }
+        var mapProperties by remember { mutableStateOf<MapProperties?>(null) }
+        var uiSettings by remember { mutableStateOf<MapUiSettings?>(null) }
+        var isMyLocationEnabled by remember { mutableStateOf(true) }
+        var mapType by remember { mutableStateOf(com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL) }
+        var mapState by remember { mutableStateOf(MapViewState()) }
+        val permissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
 
 
-        val context = LocalContext.current
-        val fusedLocationClient =
-            remember { LocationServices.getFusedLocationProviderClient(context) }
-        val locationPermissionState =
-            rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
-
-
-        LaunchedEffect(locationPermissionState) {
-            if (!locationPermissionState.status.isGranted) {
-                locationPermissionState.launchPermissionRequest()
-            } else {
-                // Запрос обновлений местоположения (PRIORITY_HIGH_ACCURACY)
-                val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
-                    .setMinUpdateIntervalMillis(500) // Update every 500ms (adjust if needed)
-                    .build()
-
-                // ... (LaunchedEffect for permissions)
-
-
-
-                fusedLocationClient.requestLocationUpdates(
-                    locationRequest,
-                    locationCallback,
-                    Looper.getMainLooper()
-                )
-            }
-        }
-
-
-
-        Log.d("Listwithmark", "$markers")
 
         Box(modifier = Modifier.fillMaxSize()) {
-
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
@@ -260,42 +204,50 @@ class Main_menu : ComponentActivity() {
                                 } catch (e: Resources.NotFoundException) {
                                     Log.e("MapsActivity", "Can't find style.", e)
                                 }
-
                             }
                         }
                     }
                 },
                 update = { mapView ->
                     mapView.getMapAsync { googleMap ->
-                        coroutineScope.launch { // Запускаем корутину для обновления
-                            googleMap.isMyLocationEnabled = isMyLocationEnabled
-                            googleMap.mapType = mapType
+                        coroutineScope.launch {
+                            // 1. Check and Request Location Permissions
 
-                            userLocation?.let { location ->
-                                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
 
-                                if (mapState.userMarker == null) {
-                                    mapState = mapState.copy(
-                                        userMarker = googleMap.addMarker(
-                                            MarkerOptions()
-                                                .position(location)
-                                                .title("Вы здесь")
-                                                .icon(
-                                                    BitmapDescriptorFactory.defaultMarker(
-                                                        BitmapDescriptorFactory.HUE_AZURE
-                                                    )
-                                                )
-                                        )
-                                    )
-                                } else {
-                                    mapState.userMarker?.position = location
+                            // 2. Get FusedLocationProviderClient
+                            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+                            // 3. Create Location Request
+                            val locationRequest = LocationRequest.create().apply {
+                                interval = 1000 // Update interval in milliseconds
+                                fastestInterval = 500 // Fastest update interval in milliseconds
+                                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                            }
+
+                            // 4. Location Callback
+                            val locationCallback = object : LocationCallback() {
+                                override fun onLocationResult(locationResult: LocationResult) {
+                                    for (location in locationResult.locations) {
+                                        // Update UI with location data
+                                        val currentLatLng = LatLng(location.latitude, location.longitude)
+                                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18f))
+                                        mapState.userMarker?.position = currentLatLng
+                                    }
                                 }
+                            }
+
+                            // 5. Request Location Updates
+                            try {
+                                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+                            } catch (unlikely: SecurityException) {
+                                Log.e("MapScreen", "Lost location permission. Could not request updates. $unlikely")
                             }
                         }
                     }
                 }
 
             )
+
 
             // Кнопка для изменения типа карты
             Button(
@@ -315,15 +267,9 @@ class Main_menu : ComponentActivity() {
                 Text(text = if (mapType == com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL) "Спутник" else "Обычный")
             }
 
-            Text(
-                text = "Скорость: ${String.format("%.1f", userSpeed)} м/с",
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
-            )
 
 
-            // Кнопка для нахождения текущего местоположения
+           /* // Кнопка для нахождения текущего местоположения
             IconButton(
                 onClick = {
                     fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -348,7 +294,7 @@ class Main_menu : ComponentActivity() {
                     contentDescription = "Cancel",
                     tint = MaterialTheme.colorScheme.primary
                 )
-            }
+            }*/
         }
     }
 

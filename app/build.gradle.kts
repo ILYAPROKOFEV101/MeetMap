@@ -81,6 +81,8 @@ dependencies {
 
     implementation ("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
 
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+
     // CALENDAR
     implementation ("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
     // CLOCK
