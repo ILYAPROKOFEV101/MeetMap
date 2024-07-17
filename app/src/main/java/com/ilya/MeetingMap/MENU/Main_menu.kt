@@ -8,18 +8,32 @@ import MarkerData
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +52,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.AlertDialog
+
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -86,21 +100,33 @@ import androidx.core.graphics.drawable.DrawableCompat
 import com.example.compose.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.ilya.MeetingMap.R
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
@@ -109,590 +135,374 @@ import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.clock.ClockDialog
 import com.maxkeppeler.sheets.clock.models.ClockSelection
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.util.Date
+import java.util.Locale
 
 
 @OptIn(ExperimentalPermissionsApi::class)
-class Main_menu : ComponentActivity() {
+class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener,
+
+    GoogleMap.OnMapClickListener {
+
+    private lateinit var mMap: GoogleMap
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var polylineOptions: PolylineOptions
+    private var speedTextView: TextView? = null
+    private var distanceTextView: TextView? = null
+    private var totalDistance: Double = 0.0
+    private var lastLocation: Location? = null
+    private var speedUnit = "KM/H"
+    private val updateSpeedHandler = Handler()
+    private var destinationMarker: Marker? = null
+    private lateinit var polyline: Polyline
+
 
     var name by mutableStateOf("")
     var googleMapState by  mutableStateOf<com.google.android.gms.maps.GoogleMap?>(null)
     var newMarkerPosition by  mutableStateOf<LatLng?>(null)
     private var showDialog by  mutableStateOf(false)
-       //  var markers by  mutableStateOf(listOf<LatLng>())
+    //  var markers by  mutableStateOf(listOf<LatLng>())
     var markers by mutableStateOf(listOf<MarkerData>())
-    
+
 
     var selectedTime by mutableStateOf<Pair<Int, Int>?>(null)
     var userMarker by mutableStateOf<Marker?>(null)
 
 
+
+    private companion object {
+        private const val MY_PERMISSIONS_REQUEST_LOCATION = 1
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            AppTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    if(showDialog){
-                        CrearMarc()
-                    }
-                    MapScreen()
-                }
-            }
-            Log.d("Marker", "onCreate: $markers")
+        setContentView(R.layout.activity_map)
+        supportActionBar?.hide()
+
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        speedTextView = findViewById(R.id.speedTextView)
+        distanceTextView = findViewById(R.id.distanceTextView)
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            initializeMap()
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                MY_PERMISSIONS_REQUEST_LOCATION
+            )
         }
     }
 
+    private fun showAddMarkerDialog(latLng: LatLng) {
+        // Раздуйте макет диалога
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_marker, null)
 
-    @SuppressLint("MissingPermission")
-    @OptIn(ExperimentalPermissionsApi::class)
-    @Composable
-    fun MapScreen() {
-        val context = LocalContext.current
-        val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-        val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
-        val coroutineScope = rememberCoroutineScope()
+        // Найдите элементы внутри макета диалога
+        val selectDateButton = dialogView.findViewById<Button>(R.id.selectDateButton)
+        val selectTimeButton = dialogView.findViewById<Button>(R.id.selectTimeButton)
+        val dialogOkButton = dialogView.findViewById<Button>(R.id.dialogOkButton)
+        val editName = dialogView.findViewById<EditText>(R.id.editname)
 
-        var userLocation by remember { mutableStateOf<LatLng?>(null) }
+        var selectedDate: String? = null
+        var selectedTime: String? = null
 
-        var mapProperties by remember { mutableStateOf<MapProperties?>(null) }
-        var uiSettings by remember { mutableStateOf<MapUiSettings?>(null) }
-        var isMyLocationEnabled by remember { mutableStateOf(true) }
-        var mapType by remember { mutableStateOf(com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL) }
-        var mapState by remember { mutableStateOf(MapViewState()) }
-        val permissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+        selectDateButton.setOnClickListener {
+            val datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Выберите дату")
+                .build()
+
+            datePicker.show(supportFragmentManager, "DATE_PICKER")
+
+            datePicker.addOnPositiveButtonClickListener {
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                selectedDate = dateFormat.format(Date(it))
+                selectDateButton.text = selectedDate
+            }
+        }
+        selectTimeButton.setOnClickListener {
+            val is24HourFormat = true // Измените на false для 12-часового формата
+            val timeFormat = if (is24HourFormat) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
+
+            val timePicker = MaterialTimePicker.Builder()
+                .setTimeFormat(timeFormat)
+                // .setTheme(R.style.ThemeOverlay_MaterialComponents_TimePicker)
+                .setTitleText("Выберите время")
+                .build()
+
+            timePicker.show(supportFragmentManager, "TIME_PICKER")
+
+            timePicker.addOnPositiveButtonClickListener {
+                val hour = timePicker.hour
+                val minute = timePicker.minute
+                selectedTime = String.format("%02d:%02d", hour, minute)
+                selectTimeButton.text = selectedTime
+            }
+        }
+
+        dialogOkButton.setOnClickListener {
+            val name = editName.text.toString()
+
+            if (selectedDate != null && selectedTime != null) {
+                Toast.makeText(this, "Вы выбрали метку: $name на $selectedDate в $selectedTime", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Пожалуйста, выберите дату и время", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Создаем диалоговое окно с инфлейтированным макетом
+        val builder = AlertDialog.Builder(this)
+        builder.setView(dialogView)
+            .setTitle("Добавить метку?")
+            .setPositiveButton("Да") { dialog, _ ->
+                // Получаем текст из EditText
+                val editText = dialogView.findViewById<EditText>(R.id.editname)
+                val markerTitle = editText.text.toString()
+                if (markerTitle.isNotEmpty()) {
+                    // Ваш метод для добавления маркера
+                     addMarker(latLng, markerTitle)
+                } else {
+                    Toast.makeText(this, "Название метки не может быть пустым", Toast.LENGTH_SHORT).show()
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton("Отмена") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
+
+    private fun initializeMap() {
+        val mapFragment = supportFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        polylineOptions = PolylineOptions()
+    }
 
 
+    fun onStandardButtonClick(view: View) {
+        mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
+    }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    MapView(context).apply {
-                        onCreate(Bundle())
-                        onResume() // Добавлено для перезапуска MapView
-                        getMapAsync { googleMap ->
-                            googleMapState = googleMap
-                            googleMap.isMyLocationEnabled = true
-                            MapsInitializer.initialize(context)
-                            mapProperties = MapProperties(googleMap)
-                            uiSettings = MapUiSettings(googleMap.uiSettings)
+    // Метод для обработки нажатия на кнопку "Satellite"
+    fun onSatelliteButtonClick(view: View) {
+        mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
+    }
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
 
-                            googleMap.apply {
-                                mapType = this.mapType
-                                isMyLocationEnabled = this.isMyLocationEnabled
+        // Включение отображения кнопки переключения типа карты
+        mMap.uiSettings.isMapToolbarEnabled = true
 
-                                // Установка слушателя кликов на карту
-                                googleMap.setOnMapClickListener { latLng ->
-                                    newMarkerPosition = latLng
-                                    showDialog = true
-                                }
+        // Включение слоя спутниковой карты
+        mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
 
-                                try {
-                                    val success = googleMap.setMapStyle(
-                                        MapStyleOptions.loadRawResourceStyle(
-                                            context,
-                                            R.raw.map_style
-                                        )
-                                    )
-                                    if (!success) {
-                                        Log.e("MapsActivity", "Style parsing failed.")
-                                    }
-                                } catch (e: Resources.NotFoundException) {
-                                    Log.e("MapsActivity", "Can't find style.", e)
-                                }
-                            }
-                        }
-                    }
-                },
-                update = { mapView ->
-                    mapView.getMapAsync { googleMap ->
-                        coroutineScope.launch {
-                            // 1. Check and Request Location Permissions
+        // Включение слоя трафика
+        mMap.isTrafficEnabled = false
+
+        // Включение слоя зданий
+        mMap.isBuildingsEnabled = true
+
+        // Включение внутренних карт (если данные поддерживаются)
+        mMap.isIndoorEnabled = true
+
+        // Отключение отображения магазинов, музеев и других POI
+        //  mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
+
+        // Отключение отображения магазинов, кофе, ресторанов и других POI
+        val styleOptions = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style)
+        mMap.setMapStyle(styleOptions)
+
+        val locationAutoCompleteTextView = findViewById<AutoCompleteTextView>(R.id.locationAutoCompleteTextView)
+        val findButton = findViewById<ImageView>(R.id.findButton)
+
+        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
+        locationAutoCompleteTextView.setAdapter(adapter)
+
+        // Добавление слушателя нажатия по карте
+        mMap.setOnMapClickListener(this)
+
+        // Обработка выбора места из AutoCompleteTextView
+        locationAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
+            val selectedItem = adapter.getItem(position).toString()
+            findLocation(selectedItem)
+        }
+
+        // Обработка нажатия на кнопку "Найти"
+        findButton.setOnClickListener {
+            val locationText = locationAutoCompleteTextView.text.toString()
+            if (locationText.isNotEmpty()) {
+                findLocation(locationText)
+            } else {
+                Toast.makeText(this, "Please enter a location", Toast.LENGTH_SHORT).show()
+            }
+        }
 
 
-                            // 2. Get FusedLocationProviderClient
-                            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        // Обработка выбора места из AutoCompleteTextView
 
-                            // 3. Create Location Request
-                            val locationRequest = LocationRequest.create().apply {
-                                interval = 1000 // Update interval in milliseconds
-                                fastestInterval = 500 // Fastest update interval in milliseconds
-                                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                            }
+        locationAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
+            val selectedItem = adapter.getItem(position).toString()
+            findLocation(selectedItem)
+        }
 
-                            // 4. Location Callback
-                            val locationCallback = object : LocationCallback() {
-                                override fun onLocationResult(locationResult: LocationResult) {
-                                    for (location in locationResult.locations) {
-                                        // Update UI with location data
-                                        val currentLatLng = LatLng(location.latitude, location.longitude)
-                                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18f))
-                                        mapState.userMarker?.position = currentLatLng
-                                    }
-                                }
-                            }
 
-                            // 5. Request Location Updates
-                            try {
-                                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
-                            } catch (unlikely: SecurityException) {
-                                Log.e("MapScreen", "Lost location permission. Could not request updates. $unlikely")
-                            }
-                        }
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            mMap.isMyLocationEnabled = true
+
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location: Location? ->
+                    location?.let {
+                        val currentLatLng = LatLng(it.latitude, it.longitude)
+                     //   mMap.addMarker(MarkerOptions().position(currentLatLng).title("You are here"))
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+
+
+                        // Отслеживание скорости и расстояния
+                        updateSpeed(it.speed)
+                        updateDistance(it)
+
+                        // Добавление метки вручную на карту
+                        val customMarkerLatLng = LatLng(37.7749, -122.4194)
+                        mMap.addMarker(MarkerOptions().position(customMarkerLatLng).title("Custom Marker"))
                     }
                 }
+        }
 
+
+        // Добавление слушателя нажатия по карте
+        mMap.setOnMapClickListener(this)
+
+
+        // Инициализация объекта Polyline для отображения маршрута
+        polyline = mMap.addPolyline(PolylineOptions().width(5f).color(android.graphics.Color.BLUE))
+
+// Добавьте обработчик для кнопки проложения маршрута
+        val routeButton = findViewById<ImageView>(R.id.routeButton)
+        routeButton.setOnClickListener {
+
+        }
+
+
+    }
+
+
+    override fun onMapClick(latLng: LatLng) {
+        showAddMarkerDialog(latLng)
+    }
+
+    private fun addMarker(latLng: LatLng, markerName: String) {
+
+        // Добавьте новую метку
+        destinationMarker = mMap
+            ?.addMarker(MarkerOptions()
+                .position(latLng)
+                .title("$markerName")
+                .icon(bitmapDescriptorFromVector(
+                    this@Main_menu, // Контекст (возможно, вам понадобится другой)
+                    R.drawable.location_on_, // Ресурс маркера
+                    "FF005B", // Цвет маркера в шестнадцатеричном формате
+                    140, // Ширина маркера
+                    140  // Высота маркера
+                ))
             )
 
+        // Другие действия, если нужно
+    }
 
-            // Кнопка для изменения типа карты
-            Button(
-                onClick = {
-                    mapType =
-                        if (mapType == com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL) {
-                            com.google.android.gms.maps.GoogleMap.MAP_TYPE_SATELLITE
-                        } else {
-                            com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL
-                        }
-                    googleMapState?.mapType = mapType
-                },
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(16.dp)
-            ) {
-                Text(text = if (mapType == com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL) "Спутник" else "Обычный")
+
+    // Добавьте метод для поиска местоположения по адресу
+    private fun findLocation(address: String) {
+        val geocoder = Geocoder(this)
+        try {
+            val results = geocoder.getFromLocationName(address, 1)
+            if (results != null && results.isNotEmpty()) {
+                val location = results[0]
+                val latLng = LatLng(location.latitude, location.longitude)
+
+                // Добавление метки на карту
+                mMap.addMarker(MarkerOptions().position(latLng).title(address))
+
+                // Перемещение камеры к метке
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+            } else {
+                // Обработка случая, когда результаты геокодирования пусты
+                Toast.makeText(this, "Location not found", Toast.LENGTH_SHORT).show()
             }
-
-
-
-           /* // Кнопка для нахождения текущего местоположения
-            IconButton(
-                onClick = {
-                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                        location?.let {
-                            val currentLatLng = LatLng(it.latitude, it.longitude)
-                            googleMapState?.moveCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    currentLatLng,
-                                    15f
-                                )
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-            ) {
-                Icon(
-                    modifier = Modifier.size(34.dp),
-                    painter = painterResource(id = R.drawable.my_location_24px),
-                    contentDescription = "Cancel",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }*/
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
     }
 
-    @Preview
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun CrearMarc() {
-        var name by remember { mutableStateOf("") }
-        var whathapends by remember { mutableStateOf("") }
-        val keyboardController = LocalSoftwareKeyboardController.current
-        val focusRequester = remember { FocusRequester() }
-        val calendarState = rememberSheetState()
-        var currentRange by remember { mutableStateOf(5) }
-        var currentValue by remember { mutableStateOf(1) }
-        var access by remember { mutableStateOf("") }
-        // Состояния для хранения выбранных дат
-        val startDateState = remember { mutableStateOf<LocalDate?>(null) }
-        val endDateState = remember { mutableStateOf<LocalDate?>(null) }
-
-        // Состояние для отслеживания, какую дату мы выбираем (начало или конец)
-        val isSelectingStartDate = remember { mutableStateOf(true) }
-
-
-
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            confirmButton = { /* Ничего не делаем здесь, кнопки ниже */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.6f),
-          //  containerColor = Color(0xFF5AC4F6), // Синий фон
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f), // Преобразование в Int
-            shape = RoundedCornerShape(30.dp),
-            dismissButton = {
-                Column(Modifier.fillMaxSize()) {
-                    LazyColumn(modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.8f)) {
-                        item {
-                            Spacer(modifier = Modifier.height(10.dp))
-                            TextField(
-                                value = name, // Текущее значение текста в поле
-                                onValueChange = {
-                                    name = it
-                                }, // Обработчик изменения текста, обновляющий переменную "text"
-                                textStyle = TextStyle(fontSize = 20.sp), // Стиль текста, используемый в поле ввода
-                                // textStyle = TextStyle.Default, // Стиль текста, используемый в поле ввода (используется стандартный стиль)
-
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent, // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
-                                    unfocusedIndicatorColor = Color.Transparent, // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
-                                    disabledIndicatorColor = MaterialTheme.colorScheme.background, // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
-                                    containerColor = MaterialTheme.colorScheme.background, // Цвет фона для поле ввода
-
-                                ),
-
-
-                                label = { // Метка, которая отображается над полем ввода
-                                    if (name == "") {
-                                        Text(
-                                            text = "Названия метки",
-                                            fontSize = 20.sp,
-                                            textAlign = TextAlign.Center,
-                                            color = MaterialTheme.colorScheme.onBackground,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                },
-
-                                keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Done, // Действие на кнопке "Готово" на клавиатуре (закрытие клавиатуры)
-
-                                    keyboardType = KeyboardType.Text // Тип клавиатуры (обычный текст)
-                                ),
-
-                                keyboardActions = KeyboardActions(
-                                    onDone = {
-                                        keyboardController?.hide() // Обработчик действия при нажатии на кнопку "Готово" на клавиатуре (скрыть клавиатуру)
-
-                                    }
-                                ),
-                                modifier = Modifier
-                                                                        .fillMaxWidth() // Занимает все доступное пространство по ширине и высоте
-                                    .height(70.dp)
-                                    .padding(start = 0.dp, end = 10.dp)
-                                    .clip(RoundedCornerShape(30.dp)) // Закругление углов поля
-                                    .background(Color.LightGray) // Цвет фона поля
-                                    .focusRequester(focusRequester = focusRequester) // Позволяет управлять фокусом поля ввода
-                            )
-                        }
-                        item {
-                            Spacer(modifier = Modifier.height(10.dp))
-                            TextField(
-                                value = whathapends,
-                                onValueChange = { whathapends = it },
-                                textStyle = TextStyle(fontSize = 24.sp),
-
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent, // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
-                                    unfocusedIndicatorColor = Color.Transparent, // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
-                                    disabledIndicatorColor = MaterialTheme.colorScheme.background, // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
-                                    containerColor = MaterialTheme.colorScheme.background, // Цвет фона для поле ввода
-
-                                ),
-
-
-                                label = { // Метка, которая отображается над полем ввода
-                                    if (whathapends == "") {
-                                        Text(
-                                            text = "Что здесь будет ?",
-                                            fontSize = 20.sp,
-                                            textAlign = TextAlign.Center,
-                                            color = MaterialTheme.colorScheme.onBackground,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                },
-
-                                keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Done, // Действие на кнопке "Готово" на клавиатуре (закрытие клавиатуры)
-
-                                    keyboardType = KeyboardType.Text // Тип клавиатуры (обычный текст)
-                                ),
-
-                                keyboardActions = KeyboardActions(
-                                    onDone = {
-                                        keyboardController?.hide() // Обработчик действия при нажатии на кнопку "Готово" на клавиатуре (скрыть клавиатуру)
-
-                                    }
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth() // Занимает все доступное пространство по ширине и высоте
-                                    .height(70.dp)
-                                    .padding(start = 10.dp, end = 10.dp)
-                                    .clip(RoundedCornerShape(30.dp)) // Закругление углов поля
-                                    .background(Color.LightGray) // Цвет фона поля
-                                    .focusRequester(focusRequester = focusRequester) // Позволяет управлять фокусом поля ввода
-                            )
-                        }
-                        item {
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                CalendarDialog(
-                                    state = calendarState,
-                                    config = CalendarConfig(
-                                        monthSelection = true,
-                                        yearSelection = true
-                                    ),
-                                    selection = CalendarSelection.Date { date ->
-                                        if (isSelectingStartDate.value) {
-                                            startDateState.value = date
-                                            isSelectingStartDate.value = false // Переключаемся на выбор конечной даты
-                                        } else {
-                                            endDateState.value = date
-                                            isSelectingStartDate.value = true // Переключаемся обратно на выбор начальной даты
-                                        }
-                                    }
-                                )
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 10.dp, end = 10.dp)
-                                        .height(70.dp)
-                                ) {
-                                    ButtonWithDate(
-
-                                        date = startDateState.value,
-                                        onClick = {
-                                            calendarState.show()
-                                            isSelectingStartDate.value = true
-                                        },
-                                        label = stringResource(id = R.string.fromchosedata),
-                                        modifier = Modifier.weight(1f), // Equal weight for this button
-
-                                    )
-
-                                    // Optional: Spacer for visual separation
-                                    Spacer(modifier = Modifier.width(8.dp))
-
-                                    ButtonWithDate(
-                                        date = endDateState.value,
-                                        onClick = {
-                                            calendarState.show()
-                                            isSelectingStartDate.value = false
-                                        },
-                                        label = stringResource(id = R.string.tochosedata),
-                                        modifier = Modifier.weight(1f) // Equal weight for this button
-                                    )
-                                }
-                            }
-                        item {
-                                                    Spacer(modifier = Modifier.height(10.dp))
-                                                    val clockState = rememberSheetState()
-
-                                                    ClockDialog(
-                                                        state = clockState,
-                                                        selection = ClockSelection.HoursMinutes { hours, minutes ->
-                                                            // Сохраните выбранное время в глобальной переменной
-                                                            selectedTime = Pair(hours, minutes)
-                                                        }
-                                                    )
-                                                    Log.d("TAG", "pikdata: $selectedTime")
-
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .height(70.dp)
-                                                            .padding(start = 10.dp, end = 10.dp),
-                                                    ) {
-                                                        Button(
-                                                            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.background),
-                                                            modifier = Modifier
-                                                                .fillMaxSize(),
-                                                            shape = RoundedCornerShape(30.dp),
-                                                            onClick = {
-                                                                clockState.show()
-                                                            }
-                                                        ) {
-                                                            Text(
-                                                                text = selectedTime?.let { (hours, minutes) ->
-                                                                    stringResource(id = R.string.time).format(hours, minutes)
-                                                                } ?: stringResource(id = R.string.chosetime),
-                                                                fontSize = 20.sp,
-                                                                color = MaterialTheme.colorScheme.onBackground,
-                                                                fontWeight = FontWeight.Bold
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                        item { 
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(start = 10.dp, end = 10.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(text = stringResource(id = R.string.place) + " $currentValue", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Slider(
-                                    value = currentValue.toFloat(),
-                                    onValueChange = { currentValue = it.toInt() },
-                                    valueRange = 1f..currentRange.toFloat(),
-                                    steps = currentRange - 1,
-                                    modifier = Modifier.height(0.dp), // Скрываем точки-деления
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.onPrimaryContainer, // Цвет ползунка
-                                        activeTrackColor = MaterialTheme.colorScheme.primary, // Цвет активной части дорожки
-                                        inactiveTrackColor = Color.White.copy(1f) // Цвет неактивной части дорожки
-                                    )
-                                )
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                Button(
-                                    modifier = Modifier,
-                                    colors =   ButtonDefaults.buttonColors(MaterialTheme.colorScheme.background),
-                                    onClick = {
-                                    currentRange = when (currentRange) {
-                                        5 -> 10
-                                        10 -> 25
-                                        25 -> 50
-                                        50 -> 100
-                                        else -> 5 // Возвращаемся к начальному диапазону
-                                    }
-                                    // Сбрасываем значение при смене диапазона
-                                }) {
-                                    Text(text = stringResource(id = R.string.places), fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
-                                }
-                            }}
-                        item {
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp)
-                                .padding(start = 10.dp, end = 10.dp)
-                            ) {
-                                Button(
-                                    modifier = Modifier
-                                        .fillMaxWidth(0.45f)
-                                        .clip(RoundedCornerShape(30.dp))
-                                    ,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.background
-                                    ),
-                                    onClick = {
-                                        access = "public"
-                                    })
-                                {
-                                    Text(text = stringResource(R.string.publick), fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground)
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Button(
-                                    modifier = Modifier
-                                        .fillMaxWidth(1f)
-                                        .clip(RoundedCornerShape(30.dp))
-                                    ,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.background
-                                    ),
-                                    onClick = {
-                                        access = "private"
-                                    })
-                                {
-                                    Text(text = stringResource(R.string.pravet), fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground)
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 10.dp, end = 10.dp)
-                        .height(50.dp)
-                    )
-                    {
-                        Button(
-                            modifier = Modifier
-                                .fillMaxWidth(0.45f)
-                                .fillMaxHeight(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.background
-                            ),
-                            onClick = {
-                                newMarkerPosition?.let { latLng ->
-                                    val newMarker = MarkerData(
-                                        position = latLng,
-                                        name = name,
-                                        whatHappens = whathapends,
-                                        startDate = startDateState.value,
-                                        endDate = endDateState.value,
-                                        selectedTime = selectedTime,
-                                        participants = currentValue,
-                                        access = access
-                                    )
-                                    markers = markers + newMarker
-                                    googleMapState?.addMarker(
-                                        MarkerOptions()
-                                            .position(latLng)
-                                            .title(name)
-                                            .icon(bitmapDescriptorFromVector(
-                                                this@Main_menu, // Контекст (возможно, вам понадобится другой)
-                                                R.drawable.location_on_, // Ресурс маркера
-                                                "FF005B", // Цвет маркера в шестнадцатеричном формате
-                                                140, // Ширина маркера
-                                                140  // Высота маркера
-                                            ))
-                                    )
-                                    googleMapState?.animateCamera(CameraUpdateFactory.newLatLng(latLng)) // Обновление камеры
-                                }
-                                showDialog = false
-                                // Reset fields after adding the marker
-                                name = ""
-                                whathapends = ""
-                                startDateState.value = null
-                                endDateState.value = null
-                                selectedTime = null
-                                currentValue = 1
-                                access = ""
-                            }) {
-                            Text(
-                                text = "Создать",
-                                fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                        Spacer(modifier = Modifier.fillMaxWidth(0.1f))
-                        Button(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.background
-                            ),
-                            onClick = {
-                                name = ""
-                                whathapends = ""
-
-                                showDialog = false
-                            }
-                        ) {
-                            Text(
-                                text = "Не создать",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            MY_PERMISSIONS_REQUEST_LOCATION -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    initializeMap()
+                } else {
+                    // Handle the case where the user denies location permission
                 }
             }
-        )
+        }
     }
+
+    private fun addPointToPolyline(latLng: LatLng) {
+        polylineOptions.add(latLng)
+        mMap.addPolyline(polylineOptions)
+    }
+
+    private fun clearPolyline() {
+        polylineOptions.points.clear()
+        mMap.clear()
+    }
+
+    override fun onPolylineClick(polyline: Polyline) {
+        // Handle the click event on the polyline if needed
+    }
+
+    private fun updateSpeed(speed: Float) {
+        speedUnit = "km/h" // Установка единиц измерения в километры в час
+
+        // Отображение скорости
+        speedTextView?.text = String.format("Speed: %.2f $speedUnit", speed)
+    }
+
+    private fun updateDistance(location: Location) {
+        if (lastLocation != null) {
+            val distance = location.distanceTo(lastLocation!!)
+            totalDistance += distance.toDouble()
+            distanceTextView?.text = String.format("Distance: %.2f meters", totalDistance)
+        }
+        lastLocation = location
+    }
+
+
+
+}
+
 
 
     fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
@@ -736,21 +546,4 @@ class Main_menu : ComponentActivity() {
         return Color(color)
     }
 
-    // Вспомогательная функция для создания кнопки с датой
-    @Composable
-    fun ButtonWithDate(date: LocalDate?, onClick: () -> Unit, label: String, modifier: Modifier = Modifier) {
-        Button(
-            colors = ButtonDefaults.buttonColors(  MaterialTheme.colorScheme.background), // Цвет фона для поле ввода),
-            modifier = modifier
-                .fillMaxHeight(),
-            shape = RoundedCornerShape(30.dp),
-            onClick = onClick
-        ) {
-            Text(
-                text = date?.toString() ?: label,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-    }
-}
+
