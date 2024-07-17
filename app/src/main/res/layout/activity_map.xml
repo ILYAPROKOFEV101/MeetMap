@@ -1,14 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MENU.Main_menu">
+    android:layout_height="match_parent">
+
+    <!-- Обертка для текстовых полей -->
 
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:layout_width="69dp"
+        android:layout_height="174dp"
+        android:layout_gravity="center|right"
+
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/btnStandard"
+            android:layout_width="match_parent"
+            android:layout_height="59dp"
+            android:padding="5.dp"
+            android:onClick="onStandardButtonClick"
+            android:contentDescription="обычная карта"
+            map:srcCompat="@drawable/map_24px" />
+
+        <ImageView
+            android:id="@+id/btnSatellite"
+            android:layout_width="match_parent"
+            android:layout_height="59dp"
+            android:padding="5.dp"
+            android:onClick="onSatelliteButtonClick"
+            android:contentDescription="Спутник"
+            map:srcCompat="@drawable/satellite" />
+
+        <ImageView
+            android:id="@+id/routeButton"
+            android:layout_width="match_parent"
+            android:layout_height="57dp"
+            android:contentDescription="Проложить маршрут"
+            android:onClick="onSatelliteButtonClick"
+            android:padding="5.dp"
+            android:text="Проложить маршрут"
+            map:srcCompat="@drawable/explore_24px" />
+
+    </LinearLayout>
+
+    <!-- Обертка для текстовых полей -->
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+
+        android:padding="16dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/locationAutoCompleteTextView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:hint="Enter Location"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:background="@android:color/transparent" />
+
+        <ImageView
+            android:id="@+id/findButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Поиск"
+            android:padding="12dp"
+            app:srcCompat="@drawable/search_24px"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside" />
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom"
+        android:padding="16dp">
+
+        <!-- Текстовое поле для отображения информации о скорости -->
+
+        <!-- Текстовое поле для отображения информации о расстоянии -->
+
+        <TextView
+            android:id="@+id/speedTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/distanceTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+
+
+</FrameLayout>

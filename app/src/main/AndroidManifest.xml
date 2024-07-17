@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION " />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
@@ -25,8 +26,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDaF5wvZj3dJFSYTZRx3XH9O_Oz8XsNETs"/>
         <activity
+            android:supportsRtl="true"
             android:name=".Mine_menu.Main_menu"
-            android:theme="@style/Theme.MeetMap"
+            android:theme="@style/AppTheme"
             android:exported="false"
             android:label="@string/title_activity_main_menu" />
 

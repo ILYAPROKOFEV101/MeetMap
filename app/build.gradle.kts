@@ -92,6 +92,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.6.8")
     implementation("androidx.compose.material:material-icons-extended:1.6.8")
     implementation("com.google.android.gms:play-services-location:21.3.0") // Or the latest version
+    implementation (libs.material.v150)
+    implementation ("com.google.android.material:material:1.12.0")
 
 
     androidTestImplementation(libs.androidx.junit)
