@@ -12,7 +12,7 @@ data class MarkerData(
     val endDate: LocalDate?,
     val selectedTime: Pair<Int, Int>?,
     val participants: Int,
-    val access: String
+    val access: Boolean
 )
 
 
