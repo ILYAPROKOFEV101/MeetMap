@@ -70,8 +70,12 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.play.services.location)
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.transport.runtime)
+    implementation(libs.protolite.well.known.types)
     testImplementation(libs.junit)
-    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    implementation("io.coil-kt:coil-compose:2.4.0") // Coil для загрузки изображений (Compose)
     implementation(platform("com.google.firebase:firebase-bom:33.1.1")) // Firebase Bill of Materials (BOM)
     implementation("com.google.firebase:firebase-auth-ktx") // Firebase Authentication (Kotlin)
     implementation("com.google.android.gms:play-services-auth:21.2.0") // Google Play Services Auth
@@ -95,6 +99,17 @@ dependencies {
     implementation (libs.material.v150)
     implementation ("com.google.android.material:material:1.12.0")
 
+    // Server setings
+
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)        // Движок CIO
+    implementation(libs.ktor.client.android)       // Движок Android
+    implementation(libs.ktor.client.logging)       // Логирование
+    implementation(libs.ktor.client.json)          // Работа с JSON
+    implementation(libs.ktor.client.serialization) // Сериализация
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // JSON сериализация от kotlinx
+
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,5 +117,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+
 
 }

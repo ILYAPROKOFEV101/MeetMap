@@ -5,6 +5,7 @@ import MapProperties
 import MapUiSettings
 import MapViewState
 import MarkerData
+import UserKeyResponse
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -104,6 +105,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
@@ -129,14 +131,33 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+
 import com.ilya.MeetingMap.R
+import com.ilya.codewithfriends.presentation.profile.ID
+import com.ilya.codewithfriends.presentation.profile.UID
+import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
+import com.ilya.reaction.logik.PreferenceHelper
+import com.ilya.reaction.logik.PreferenceHelper.getUserKey
+import com.ilya.reaction.logik.PreferenceHelper.setUserKey
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.clock.ClockDialog
 import com.maxkeppeler.sheets.clock.models.ClockSelection
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.kotlinx.serializer.KotlinxSerializer
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -145,9 +166,7 @@ import java.util.Locale
 
 
 @OptIn(ExperimentalPermissionsApi::class)
-class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener,
-
-    GoogleMap.OnMapClickListener {
+class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener, GoogleMap.OnMapClickListener {
 
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -161,12 +180,16 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     private var destinationMarker: Marker? = null
     private lateinit var polyline: Polyline
 
+    private val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
+    }
 
-    var name by mutableStateOf("")
-    var googleMapState by  mutableStateOf<com.google.android.gms.maps.GoogleMap?>(null)
-    var newMarkerPosition by  mutableStateOf<LatLng?>(null)
-    private var showDialog by  mutableStateOf(false)
-    //  var markers by  mutableStateOf(listOf<LatLng>())
+
+
+
     var markers by mutableStateOf(listOf<MarkerData>())
 
 
@@ -175,15 +198,45 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
 
 
+
+
+
+    private val client = HttpClient(CIO) {
+        install(Logging) {
+            level = LogLevel.INFO
+        }
+            Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+                allowStructuredMapKeys = true
+                encodeDefaults = false
+            }
+
+    }
+
     private companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 1
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+        val name = UID(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+
+        val uid = ID(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+        if(getUserKey(this) == "")
+        {
+            sendGetRequest("$uid")
+       }
+
+        Log.d("UserKey", getUserKey(this).toString())
         supportActionBar?.hide()
+
+
 
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -485,6 +538,31 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     }
 
 
+
+
+    private fun sendGetRequest(uid: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Отправка GET-запроса и получение ответа
+                val response: HttpResponse = client.get("https://meetmap.up.railway.app/checkUser/$uid")
+
+                withContext(Dispatchers.Main) {
+                    // Логирование и использование полученного ключа
+                  //  Log.d("UserKey", response.bodyAsText())
+                    println(response.bodyAsText())
+                }
+                setUserKey(this@Main_menu, response.bodyAsText())
+            } catch (e: Exception) {
+                println("Error: ${e.message}")
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        client.close()
+    }
+
     // Добавьте метод для поиска местоположения по адресу
     private fun findLocation(address: String) {
         val geocoder = Geocoder(this)
@@ -558,6 +636,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
 
 }
+
+
 
 
 
