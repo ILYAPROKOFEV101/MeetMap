@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="590dp"
+    android:layout_height="680dp"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -78,11 +78,21 @@
         android:layout_height="22dp" />
 
     <Button
-        android:id="@+id/selectTimeButton"
+        android:id="@+id/selectTimeButton_start"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@drawable/rounded_background"
         android:text="Выбрать время"
+        />
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="22dp" />
+    <Button
+        android:id="@+id/selectTimeButton_end"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/rounded_background"
+        android:text="Время завершение метки"
         />
 
     <Space

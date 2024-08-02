@@ -108,7 +108,16 @@ dependencies {
     implementation(libs.ktor.client.logging)       // Логирование
     implementation(libs.ktor.client.json)          // Работа с JSON
     implementation(libs.ktor.client.serialization) // Сериализация
+    implementation(libs.ktor.client.content.negotiation)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // JSON сериализация от kotlinx
+// retrofit
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.logging.interceptor)
+    implementation (libs.kotlinx.coroutines.core)
+    implementation (libs.kotlinx.coroutines.android)
+
+
 
 
     androidTestImplementation(libs.androidx.junit)
@@ -117,6 +126,9 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+
+
 
 
 

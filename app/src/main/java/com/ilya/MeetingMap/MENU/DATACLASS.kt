@@ -1,19 +1,11 @@
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 
 data class MapProperties(val googleMap: com.google.android.gms.maps.GoogleMap)
 data class MapUiSettings(val uiSettings: com.google.android.gms.maps.UiSettings)
-data class MarkerData(
-    val position: LatLng,
-    val name: String,
-    val whatHappens: String,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
-    val selectedTime: Pair<Int, Int>?,
-    val participants: Int,
-    val access: Boolean
-)
+
 
 
 // Класс для хранения состояния MapView
@@ -21,3 +13,22 @@ data class MapViewState(
     val userLocation: LatLng? = null,
     val userMarker: Marker? = null
 )
+
+data class MarkerData(
+    val key: String,
+    val username: String,
+    val imguser: String,
+    val photomark: String,
+    val id: String,
+    val lat: Double,
+    val lon: Double,
+    val name: String,
+    val whatHappens: String,
+    val startDate: String,
+    val endDate: String,
+    val startTime: String,
+    val endTime: String,
+    val participants: Int,
+    val access: Boolean
+)
+

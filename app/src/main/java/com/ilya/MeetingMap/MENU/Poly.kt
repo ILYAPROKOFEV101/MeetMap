@@ -6,6 +6,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.UUID
 
 class DirectionsJSONParser {
     fun parse(jObject: JSONObject): List<List<HashMap<String, String>>> {
@@ -115,4 +116,11 @@ object Utils {
         return data
     }
 }
+
+
+
+fun generateUID(): String {
+    return UUID.randomUUID().toString()
+}
+
 

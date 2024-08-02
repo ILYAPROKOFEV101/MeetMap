@@ -131,13 +131,18 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import com.google.gson.Gson
+import com.ilya.MeetingMap.MENU.Server_API.postInvite
+
 
 import com.ilya.MeetingMap.R
 import com.ilya.codewithfriends.presentation.profile.ID
+import com.ilya.codewithfriends.presentation.profile.IMG
 import com.ilya.codewithfriends.presentation.profile.UID
 import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
+import com.ilya.reaction.logik.PreferenceHelper.getimg
 import com.ilya.reaction.logik.PreferenceHelper.setUserKey
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
@@ -145,14 +150,22 @@ import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.clock.ClockDialog
 import com.maxkeppeler.sheets.clock.models.ClockSelection
+import generateUID
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.kotlinx.serializer.KotlinxSerializer
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readText
+import io.ktor.client.utils.EmptyContent.contentType
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -187,54 +200,56 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         )
     }
 
-
-
-
     var markers by mutableStateOf(listOf<MarkerData>())
 
 
-    var selectedTime by mutableStateOf<Pair<Int, Int>?>(null)
-    var userMarker by mutableStateOf<Marker?>(null)
-
-
-
-
-
-
-    private val client = HttpClient(CIO) {
-        install(Logging) {
-            level = LogLevel.INFO
-        }
-            Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-                allowStructuredMapKeys = true
-                encodeDefaults = false
-            }
-
-    }
 
     private companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 1
     }
 
+    private val client = HttpClient(CIO) {
+        install(Logging) {
+            level = LogLevel.INFO
+        }
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            allowStructuredMapKeys = true
+            encodeDefaults = false
+        }
+
+    }
+    var uid_main = ""
+
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
         val name = UID(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+        val img = IMG(
             userData = googleAuthUiClient.getSignedInUser()
         )
 
         val uid = ID(
             userData = googleAuthUiClient.getSignedInUser()
         )
+        uid_main = uid.toString()
         if(getUserKey(this) == "")
         {
             sendGetRequest("$uid")
        }
 
+
+
         Log.d("UserKey", getUserKey(this).toString())
         supportActionBar?.hide()
+
 
 
 
@@ -261,15 +276,21 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     }
 
-    private fun showAddMarkerDialog(latLng: LatLng) {
+
+
+
+
+     fun showAddMarkerDialog(latLng: LatLng) {
         // Раздуйте макет диалога
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_marker, null)
+    var context = this
 
         var access = false // Переменная для хранения состояния Switch
         // Найдите элементы внутри макета диалога
         val selectDateButton_start = dialogView.findViewById<Button>(R.id.selectDateButtonstart)
         val selectDateButton_end = dialogView.findViewById<Button>(R.id.selectDateButtonend)
-        val selectTimeButton = dialogView.findViewById<Button>(R.id.selectTimeButton)
+        val selectTimeButtonstart = dialogView.findViewById<Button>(R.id.selectTimeButton_start)
+        val selectTimeButtonend = dialogView.findViewById<Button>(R.id.selectTimeButton_end)
         val editName = dialogView.findViewById<EditText>(R.id.editname)
         val editobout = dialogView.findViewById<EditText>(R.id.editobout)
         val seekBar = dialogView.findViewById<SeekBar>(R.id.seekBar)
@@ -279,40 +300,18 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         var selectedDate_start: String? = null
         var selectedDate_end: String? = null
         var selectedTime: Pair<Int, Int>? = null
+         var startTime: String? = null
+         var endTime: String? = null
 
-        selectDateButton_start.setOnClickListener {
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .build()
 
-            datePicker.show(supportFragmentManager, "DATE_PICKER")
 
-            datePicker.addOnPositiveButtonClickListener {
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                selectedDate_start = dateFormat.format(Date(it))
-                selectDateButton_start.text = selectedDate_start
-            }
-        }
-        selectDateButton_end.setOnClickListener {
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Выберите дату")
-                .build()
 
-            datePicker.show(supportFragmentManager, "DATE_PICKER")
 
-            datePicker.addOnPositiveButtonClickListener {
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                selectedDate_end = dateFormat.format(Date(it))
-                selectDateButton_end.text = selectedDate_end
-            }
-        }
-
-        publicSwitch.text = if (!access) "Публичная метка" else "Приватная метка"
-
+         publicSwitch.text = if (!access) "Публичная метка" else "Приватная метка"
         publicSwitch.setOnCheckedChangeListener { _, isChecked ->
             access = isChecked
             publicSwitch.text = if (!access) "Публичная метка" else "Приватная метка"
         }
-
         // Listener для отслеживания изменений SeekBar
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -329,29 +328,77 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         })
 
-        selectTimeButton.setOnClickListener {
-            val is24HourFormat = true // Измените на false для 12-часового формата
-            val timeFormat = if (is24HourFormat) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
 
-            val timePicker = MaterialTimePicker.Builder()
-                .setTimeFormat(timeFormat)
-                // .setTheme(R.style.ThemeOverlay_MaterialComponents_TimePicker)
-                .setTitleText("Выберите время")
-                .build()
+         selectDateButton_start.setOnClickListener {
+             val datePicker = MaterialDatePicker.Builder.datePicker()
+                 .build()
 
-            timePicker.show(supportFragmentManager, "TIME_PICKER")
+             datePicker.show(supportFragmentManager, "DATE_PICKER")
 
-            timePicker.addOnPositiveButtonClickListener {
-                val hour = timePicker.hour
-                val minute = timePicker.minute
-                selectedTime = Pair(hour, minute)
-                selectTimeButton.text = String.format("%02d:%02d", hour, minute)
-            }
-        }
+             datePicker.addOnPositiveButtonClickListener {
+                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                 selectedDate_start = dateFormat.format(Date(it))
+                 selectDateButton_start.text = selectedDate_start
+             }
+         }
+         selectDateButton_end.setOnClickListener {
+             val datePicker = MaterialDatePicker.Builder.datePicker()
+                 .setTitleText("Выберите дату")
+                 .build()
+
+             datePicker.show(supportFragmentManager, "DATE_PICKER")
+
+             datePicker.addOnPositiveButtonClickListener {
+                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                 selectedDate_end = dateFormat.format(Date(it))
+                 selectDateButton_end.text = selectedDate_end
+             }
+         }
+
+         selectTimeButtonstart.setOnClickListener {
+             val is24HourFormat = true
+             val timeFormat = if (is24HourFormat) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
+
+             val timePicker = MaterialTimePicker.Builder()
+                 .setTimeFormat(timeFormat)
+                 .setTitleText("Выберите время")
+                 .build()
+
+             timePicker.show(supportFragmentManager, "TIME_PICKER")
+
+             timePicker.addOnPositiveButtonClickListener {
+                 val hour = timePicker.hour
+                 val minute = timePicker.minute
+                 val formattedTime = String.format("%02d:%02d", hour, minute)
+                 selectedTime = Pair(hour, minute)
+                 selectTimeButtonstart.text = formattedTime
+                 startTime = formattedTime // Сохраняем выбранное время в переменной
+             }
+         }
+
+         selectTimeButtonend.setOnClickListener {
+             val is24HourFormat = true
+             val timeFormat = if (is24HourFormat) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
+
+             val timePicker = MaterialTimePicker.Builder()
+                 .setTimeFormat(timeFormat)
+                 .setTitleText("Выберите время")
+                 .build()
+
+             timePicker.show(supportFragmentManager, "TIME_PICKER")
+
+             timePicker.addOnPositiveButtonClickListener {
+                 val hour = timePicker.hour
+                 val minute = timePicker.minute
+                 val formattedTime = String.format("%02d:%02d", hour, minute)
+                 selectedTime = Pair(hour, minute)
+                 selectTimeButtonend.text = formattedTime
+                 endTime = formattedTime // Сохраняем выбранное время в переменной
+             }
+         }
 
 
-
-        // Создаем диалоговое окно с инфлейтированным макетом
+         // Создаем диалоговое окно с инфлейтированным макетом
         val builder = AlertDialog.Builder(this)
         builder.setView(dialogView)
             .setPositiveButton("Да") { dialog, _ ->
@@ -364,17 +411,30 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 if (markerTitle.isNotEmpty()) {
                     val participants = seekBar.progress + 1
                     val markerData = MarkerData(
-                        position = latLng,
+                        key =  getUserKey(this).toString(),
+                        username = "Ilya",
+                        imguser = "Photo",
+                        photomark = "photo",
+                        id = generateUID(),
+                        lat = latLng.latitude,
+                        lon = latLng.longitude,
                         name = markerTitle,
                         whatHappens = markerDescription, // Здесь вы можете добавить логическое значение или данные для этого поля
-                        startDate = selectedDate_start?.let { LocalDate.parse(it) },
-                        endDate = selectedDate_end?.let { LocalDate.parse(it) },
-                        selectedTime = selectedTime,
+                        startDate = selectedDate_start?.let { LocalDate.parse(it) }.toString(),
+                        endDate = selectedDate_end?.let { LocalDate.parse(it) }.toString(),
+                        startTime = startTime.toString(),
+                        endTime = endTime.toString(),
                         participants = participants,
                         access = access
                     )
-                    markers = markers + markerData // Добавляем новый объект MarkerData в список
+
+                        // markers = markers + markerData // Добавляем новый объект MarkerData в список
                     addMarker(latLng, markerTitle)
+                    val gson = Gson()
+                    val markerDataJson = gson.toJson(markerData)
+                    Log.d("PushDataJoin", "MarkerData JSON: $markerDataJson")
+                        postInvite(getUserKey(context).toString(),uid_main,  markerData)
+
                     Log.d("Markersonmap", markers.toString())
                 } else {
                     Toast.makeText(this, "Название метки не может быть пустым", Toast.LENGTH_SHORT).show()
@@ -537,9 +597,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         // Другие действия, если нужно
     }
 
-
-
-
     private fun sendGetRequest(uid: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -632,14 +689,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         }
         lastLocation = location
     }
-
-
-
 }
-
-
-
-
 
     fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
         when (icon) {
