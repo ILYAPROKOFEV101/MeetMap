@@ -13,5 +13,16 @@
     <string name="place">Мест</string>
     <string name="publick">Доступная всем</string>
     <string name="pravet">Приватная метка</string>
+    <string name="marker_button_ready">Ready</string>
+    <string name="marker_button_not">Not yet</string>
+    <string name="About_marker">About marker</string>
+    <string name="Street">Street</string>
+    <string name="Start_Date_and_Time">Start Date and Time</string>
+    <string name="End_Date_and_Time">End Date and Time</string>
+    <string name="places_in_marker">Places</string>
+    <string name="marker_name">Name</string>
+
+
+
 
 </resources>

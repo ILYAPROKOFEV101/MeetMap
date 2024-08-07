@@ -1,6 +1,7 @@
 package com.ilya.MeetingMap.Mine_menu
 
 
+import MapMarker
 import MapProperties
 import MapUiSettings
 import MapViewState
@@ -100,6 +101,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.compose.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -132,6 +134,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.gson.Gson
+import com.ilya.MeetingMap.MENU.Server_API.getMarker
 import com.ilya.MeetingMap.MENU.Server_API.postInvite
 
 
@@ -168,6 +171,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -192,7 +196,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     private val updateSpeedHandler = Handler()
     private var destinationMarker: Marker? = null
     private lateinit var polyline: Polyline
-
+    var currentLatLngGlobal by mutableStateOf<LatLng>(LatLng(0.0, 0.0))
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = applicationContext,
@@ -225,9 +229,13 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
 
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+
 
         val name = UID(
             userData = googleAuthUiClient.getSignedInUser()
@@ -239,20 +247,19 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val uid = ID(
             userData = googleAuthUiClient.getSignedInUser()
         )
+
+
+        Log.d("URL_GET_MAKER", "${currentLatLngGlobal.latitude} and ${currentLatLngGlobal.longitude}")
+
+
         uid_main = uid.toString()
         if(getUserKey(this) == "")
         {
             sendGetRequest("$uid")
        }
 
-
-
         Log.d("UserKey", getUserKey(this).toString())
         supportActionBar?.hide()
-
-
-
-
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -273,12 +280,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             )
         }
 
-
     }
-
-
-
-
 
      fun showAddMarkerDialog(latLng: LatLng) {
         // Раздуйте макет диалога
@@ -430,6 +432,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
                         // markers = markers + markerData // Добавляем новый объект MarkerData в список
                     addMarker(latLng, markerTitle)
+
                     val gson = Gson()
                     val markerDataJson = gson.toJson(markerData)
                     Log.d("PushDataJoin", "MarkerData JSON: $markerDataJson")
@@ -450,8 +453,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         dialog.show()
     }
 
-
-
     private fun initializeMap() {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -460,6 +461,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         polylineOptions = PolylineOptions()
     }
+    private val markerDataMap = mutableMapOf<Marker, MapMarker>()
+
 
 
     fun onStandardButtonClick(view: View) {
@@ -471,6 +474,9 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
     }
     override fun onMapReady(googleMap: GoogleMap) {
+
+
+
         mMap = googleMap
         mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
 
@@ -530,6 +536,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         }
 
 
+
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -545,9 +552,47 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
 
 
+                        lifecycleScope.launch {
+                            while (true) {
+                                try {
+                                    val markers = getMarker(uid_main, LatLng(it.latitude, it.longitude))
+                                    // Обработка списка маркеров
+                                    markers.forEach { mapMarker ->
+                                        val markerLatLngnew = LatLng(mapMarker.lat, mapMarker.lon)
+                                        val marker = addMarker(markerLatLngnew, mapMarker.name)
+
+                                        // Проверка на null
+                                        if (marker != null) {
+                                            // Сохраните соответствие между меткой и данными
+                                            markerDataMap[marker] = mapMarker
+                                        }
+                                    }
+
+                                } catch (e: Exception) {
+                                    // Обработка ошибки
+                                    Log.e("MarkerData", "Error fetching markers", e)
+                                }
+                                // Задержка на 30 секунд
+                                delay(30000)
+                            }
+                        }
+
+
+
+
+
                         // Отслеживание скорости и расстояния
                         updateSpeed(it.speed)
                         updateDistance(it)
+
+                        mMap.setOnMarkerClickListener { marker ->
+                            markerDataMap[marker]?.let { mapMarker ->
+                                showMarkerDialog(mapMarker)
+                                Log.d("MarkerData_new", mapMarker.toString())
+                            }
+                            true // Возвращаем true, чтобы событие не обрабатывалось дальше
+                        }
+
 
                         // Добавление метки вручную на карту
                         val customMarkerLatLng = LatLng(37.7749, -122.4194)
@@ -555,6 +600,10 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     }
                 }
         }
+
+
+
+
 
 
         // Добавление слушателя нажатия по карте
@@ -573,29 +622,78 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     }
 
+    private fun showMarkerDialog(marker: MapMarker) {
+
+       // Log.d("markerId", markerId)
+
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_view_marker, null)
+        val marker_image  = dialogView.findViewById<ImageView>(R.id.marker_image)
+        val marker_name = dialogView.findViewById<TextView>(R.id.marker_name)
+        val marker_about_marker = dialogView.findViewById<TextView>(R.id.marker_about_marker)
+        val marker_street = dialogView.findViewById<TextView>(R.id.marker_street)
+        val marker_start_Date = dialogView.findViewById<TextView>(R.id.marker_start_Date)
+        val marker_end_Time = dialogView.findViewById<TextView>(R.id.marker_end_Date)
+        val marker_end_Date = dialogView.findViewById<TextView>(R.id.marker_end_Date)
+        val marker_button_not = dialogView.findViewById<Button>(R.id.marker_button_not)
+        val marker_button_ready = dialogView.findViewById<Button>(R.id.marker_button_ready)
+
+
+
+
+        marker_name.text = marker.name
+        marker_about_marker.text = marker.whatHappens
+        marker_street.text = ""
+        marker_start_Date.text = "${marker.startDate} Time:${marker.startTime}"
+        marker_end_Date.text = "${marker.endDate} Time:${marker.endTime}"
+
+        val builder = AlertDialog.Builder(this)
+
+
+
+        builder.setView(dialogView)
+            .setPositiveButton("Да") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNegativeButton("Отмена") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        val dialog = builder.create()
+        dialog.window?.setBackgroundDrawableResource(R.drawable.rounded_background)
+        dialog.show()
+    }
+
+
 
     override fun onMapClick(latLng: LatLng) {
         showAddMarkerDialog(latLng)
+
     }
 
-    private fun addMarker(latLng: LatLng, markerName: String) {
-
+    private fun addMarker(latLng: LatLng, markerName: String): Marker? {
         // Добавьте новую метку
-        destinationMarker = mMap
-            ?.addMarker(MarkerOptions()
+        val marker = mMap?.addMarker(
+            MarkerOptions()
                 .position(latLng)
-                .title("$markerName")
-                .icon(bitmapDescriptorFromVector(
-                    this@Main_menu, // Контекст (возможно, вам понадобится другой)
-                    R.drawable.location_on_, // Ресурс маркера
-                    "FF005B", // Цвет маркера в шестнадцатеричном формате
-                    140, // Ширина маркера
-                    140  // Высота маркера
-                ))
-            )
+                .title(markerName)
+                .icon(
+                    bitmapDescriptorFromVector(
+                        this@Main_menu, // Контекст (возможно, вам понадобится другой)
+                        R.drawable.location_on_, // Ресурс маркера
+                        "FF005B", // Цвет маркера в шестнадцатеричном формате
+                        140, // Ширина маркера
+                        140  // Высота маркера
+                    )
+                )
+        )
 
-        // Другие действия, если нужно
+        // Сохраните метку в переменную destinationMarker, если нужно
+        destinationMarker = marker
+
+        // Возвращаем созданную метку
+        return marker
     }
+
 
     private fun sendGetRequest(uid: String) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -643,6 +741,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         }
     }
 
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -676,7 +775,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     private fun updateSpeed(speed: Float) {
         speedUnit = "km/h" // Установка единиц измерения в километры в час
-
         // Отображение скорости
         speedTextView?.text = String.format("Speed: %.2f $speedUnit", speed)
     }
@@ -689,6 +787,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         }
         lastLocation = location
     }
+
+
 }
 
     fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
