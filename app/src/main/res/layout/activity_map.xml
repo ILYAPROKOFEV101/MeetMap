@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Обертка для текстовых полей -->
+
 
     <fragment
         android:id="@+id/map"
@@ -85,37 +86,39 @@
             android:scaleType="centerInside" />
     </LinearLayout>
 
-
-
-    <LinearLayout
+    <!-- Обертка для текстовых полей -->
+    <!-- CoordinatorLayout для BottomSheet -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="bottom"
-        android:padding="16dp">
+        android:layout_height="match_parent">
 
-        <!-- Текстовое поле для отображения информации о скорости -->
+        <!-- BottomSheet -->
+        <LinearLayout
+            android:id="@+id/bottomSheet"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:minHeight="30dp"
+            android:background="@android:color/white"
+            android:orientation="vertical"
+            android:padding="16dp"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-        <!-- Текстовое поле для отображения информации о расстоянии -->
 
-        <TextView
-            android:id="@+id/speedTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/distanceTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
-    </LinearLayout>
+            <!-- Контент BottomSheet -->
+            <TextView
+                android:id="@+id/infoTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Информация о маршруте"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
+
+
+
+        </LinearLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
 

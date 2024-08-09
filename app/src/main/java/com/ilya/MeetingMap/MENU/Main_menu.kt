@@ -23,6 +23,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
@@ -129,6 +130,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -234,6 +236,68 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+
+        // Функция для конвертации dp в пиксели
+        fun dpToPx(dp: Int): Int {
+            return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
+            ).toInt()
+        }
+
+        val bottomSheet: View = findViewById(R.id.bottomSheet)
+        val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+        // Устанавливаем начальное состояние
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+
+        // Найдем BottomSheet по его ID
+
+
+        // Устанавливаем начальное состояние свернутого листа
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+
+        // Можно установить максимальную высоту или другие параметры
+        bottomSheetBehavior.peekHeight = 50 // Высота в свернутом состоянии
+
+        // Добавляем слушатель, чтобы отслеживать изменения состояния
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        // Лист полностью развернут
+                        val textView: TextView = findViewById(R.id.infoTextView)
+                        textView.text = "Лист развернут!"
+                    }
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        // Лист полностью свернут
+                        val textView: TextView = findViewById(R.id.infoTextView)
+                        textView.text = "Лист свернут!"
+                    }
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        // Лист перетаскивается
+                        val textView: TextView = findViewById(R.id.infoTextView)
+                        textView.text = "Лист перетаскивается!"
+                    }
+                    BottomSheetBehavior.STATE_SETTLING -> {
+                        // Лист находится в процессе перехода между состояниями
+                        val textView: TextView = findViewById(R.id.infoTextView)
+                        textView.text = "Лист в процессе перехода между состояниями!"
+                    }
+                    BottomSheetBehavior.STATE_HIDDEN -> {
+                        // Лист скрыт
+                        val textView: TextView = findViewById(R.id.infoTextView)
+                        textView.text = "Лист скрыт!"
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // slideOffset показывает прогресс свайпа (от 0 до 1)
+                val textView: TextView = findViewById(R.id.infoTextView)
+                textView.text = "Лист двигается: ${"%.2f".format(slideOffset * 100)}%"
+            }
+        })
 
 
 
@@ -670,7 +734,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     }
 
-    private fun addMarker(latLng: LatLng, markerName: String): Marker? {
+    private fun addMarker(latLng: LatLng, markerName: String): Marker? {    
         // Добавьте новую метку
         val marker = mMap?.addMarker(
             MarkerOptions()
