@@ -100,7 +100,7 @@
             android:minHeight="30dp"
             android:background="@android:color/white"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:padding="10dp"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
 
@@ -110,11 +110,16 @@
                 android:id="@+id/infoTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Информация о маршруте"
+                android:textAlignment="center"
                 android:textColor="@android:color/black"
                 android:textSize="18sp" />
 
-
+            <!-- RecyclerView для отображения списка маркеров -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/markerRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical" />
 
         </LinearLayout>
 

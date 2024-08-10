@@ -5,6 +5,7 @@ import MapMarker
 import MapProperties
 import MapUiSettings
 import MapViewState
+import MarkerAdapter
 import MarkerData
 import UserKeyResponse
 import android.Manifest
@@ -103,6 +104,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.compose.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -156,6 +159,7 @@ import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.clock.ClockDialog
 import com.maxkeppeler.sheets.clock.models.ClockSelection
 import generateUID
+import getParticipant
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -198,6 +202,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     private val updateSpeedHandler = Handler()
     private var destinationMarker: Marker? = null
     private lateinit var polyline: Polyline
+    val markerList: MutableList<MarkerData> = mutableListOf()
     var currentLatLngGlobal by mutableStateOf<LatLng>(LatLng(0.0, 0.0))
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -237,67 +242,51 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
-
-        // Функция для конвертации dp в пиксели
-        fun dpToPx(dp: Int): Int {
-            return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
-            ).toInt()
-        }
-
         val bottomSheet: View = findViewById(R.id.bottomSheet)
         val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
 
+
         // Устанавливаем начальное состояние
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-
-        // Найдем BottomSheet по его ID
-
-
         // Устанавливаем начальное состояние свернутого листа
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-
         // Можно установить максимальную высоту или другие параметры
         bottomSheetBehavior.peekHeight = 50 // Высота в свернутом состоянии
-
         // Добавляем слушатель, чтобы отслеживать изменения состояния
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
-                        // Лист полностью развернут
-                        val textView: TextView = findViewById(R.id.infoTextView)
-                        textView.text = "Лист развернут!"
+
                     }
                     BottomSheetBehavior.STATE_COLLAPSED -> {
-                        // Лист полностью свернут
-                        val textView: TextView = findViewById(R.id.infoTextView)
-                        textView.text = "Лист свернут!"
+
                     }
                     BottomSheetBehavior.STATE_DRAGGING -> {
-                        // Лист перетаскивается
-                        val textView: TextView = findViewById(R.id.infoTextView)
-                        textView.text = "Лист перетаскивается!"
+
                     }
                     BottomSheetBehavior.STATE_SETTLING -> {
-                        // Лист находится в процессе перехода между состояниями
+// Лист скрыт
                         val textView: TextView = findViewById(R.id.infoTextView)
-                        textView.text = "Лист в процессе перехода между состояниями!"
+                        textView.text = getString(R.string.my_tags)
                     }
                     BottomSheetBehavior.STATE_HIDDEN -> {
-                        // Лист скрыт
-                        val textView: TextView = findViewById(R.id.infoTextView)
-                        textView.text = "Лист скрыт!"
+
                     }
                 }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 // slideOffset показывает прогресс свайпа (от 0 до 1)
-                val textView: TextView = findViewById(R.id.infoTextView)
-                textView.text = "Лист двигается: ${"%.2f".format(slideOffset * 100)}%"
+                // Лист скрыт
+
             }
         })
+
+
+
+
+
 
 
 
@@ -312,23 +301,39 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             userData = googleAuthUiClient.getSignedInUser()
         )
 
+        lifecycleScope.launch {
+            loadMarkers(uid.toString(), getUserKey(this@Main_menu).toString())
+            // Теперь markerList содержит данные, полученные с сервера
+            Log.d("MarkerData_2", "Final list of markers: $markerList")
+
+            val recyclerView: RecyclerView = findViewById(R.id.markerRecyclerView)
+            recyclerView.layoutManager = LinearLayoutManager(this@Main_menu)
+            recyclerView.adapter = MarkerAdapter(markerList)
+            Log.d("MarkerData_2", "MarkerList тут: $markerList")
+        }
+
+
+
+
 
         Log.d("URL_GET_MAKER", "${currentLatLngGlobal.latitude} and ${currentLatLngGlobal.longitude}")
 
 
         uid_main = uid.toString()
+
         if(getUserKey(this) == "")
         {
             sendGetRequest("$uid")
        }
+
+
 
         Log.d("UserKey", getUserKey(this).toString())
         supportActionBar?.hide()
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        speedTextView = findViewById(R.id.speedTextView)
-        distanceTextView = findViewById(R.id.distanceTextView)
+
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -393,8 +398,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 // Действия при остановке изменения значения SeekBar
             }
         })
-
-
          selectDateButton_start.setOnClickListener {
              val datePicker = MaterialDatePicker.Builder.datePicker()
                  .build()
@@ -805,6 +808,16 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         }
     }
 
+
+    suspend fun loadMarkers(uid: String, key: String) {
+        try {
+            val markers = getParticipant(uid, key)
+            markerList.addAll(markers)
+            Log.d("MarkerData_2", "Markers added to list: $markerList")
+        } catch (e: Exception) {
+            Log.e("MarkerData_2", "Error loading markers", e)
+        }
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
