@@ -15,6 +15,8 @@
     <string name="pravet">Приватная метка</string>
     <string name="marker_button_ready">Ready</string>
     <string name="marker_button_not">Not yet</string>
+    <string name="marker_button_find_tag">find tag</string>
+    <string name="marker_button_delete_tag">delete tag</string>
     <string name="About_marker">About marker</string>
     <string name="Street">Street</string>
     <string name="Start_Date_and_Time">Start Date and Time</string>

@@ -1,0 +1,4 @@
+<resources>
+    <!-- Пример: 10dp отступ между элементами списка -->
+    <dimen name="space_between_items">30dp</dimen>
+</resources>

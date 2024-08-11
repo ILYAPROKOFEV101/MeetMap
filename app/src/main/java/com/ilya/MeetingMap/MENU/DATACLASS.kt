@@ -19,6 +19,7 @@ data class MarkerData(
     val username: String,
     val imguser: String,
     val photomark: String,
+    val street: String,
     val id: String,
     val lat: Double,
     val lon: Double,

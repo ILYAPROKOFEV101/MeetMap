@@ -2,7 +2,7 @@
 
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="340dp"
+    android:layout_height="420dp"
     android:orientation="vertical"
     android:backgroundTint="@color/alertcolor"
     android:background="@drawable/rounded_background"
@@ -112,6 +112,40 @@
             android:textColor="@android:color/black"
             android:textSize="16sp" />
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp">
+        </Space>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal">
+
+
+            <Button
+                android:id="@+id/marker_button_delete_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_background"
+                android:text="@string/marker_button_delete_tag" />
+
+            <Space
+                android:layout_width="5dp"
+                android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/marker_button_find_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_background"
+                android:text="@string/marker_button_find_tag" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

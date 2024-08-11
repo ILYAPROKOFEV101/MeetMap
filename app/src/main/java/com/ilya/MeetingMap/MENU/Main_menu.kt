@@ -2,29 +2,15 @@ package com.ilya.MeetingMap.Mine_menu
 
 
 import MapMarker
-import MapProperties
-import MapUiSettings
-import MapViewState
 import MarkerAdapter
 import MarkerData
-import UserKeyResponse
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.DialogInterface
+import SpaceItemDecoration
 import android.content.pm.PackageManager
-import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.location.Geocoder
 import android.location.Location
-import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
@@ -36,97 +22,26 @@ import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
 
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.compose.AppTheme
+import bitmapDescriptorFromVector
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationAvailability
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
@@ -135,7 +50,6 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.gson.Gson
@@ -143,44 +57,22 @@ import com.ilya.MeetingMap.MENU.Server_API.getMarker
 import com.ilya.MeetingMap.MENU.Server_API.postInvite
 
 
+
 import com.ilya.MeetingMap.R
 import com.ilya.codewithfriends.presentation.profile.ID
 import com.ilya.codewithfriends.presentation.profile.IMG
 import com.ilya.codewithfriends.presentation.profile.UID
 import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
-import com.ilya.reaction.logik.PreferenceHelper
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
-import com.ilya.reaction.logik.PreferenceHelper.getimg
-import com.ilya.reaction.logik.PreferenceHelper.setUserKey
-import com.maxkeppeker.sheets.core.models.base.rememberSheetState
-import com.maxkeppeler.sheets.calendar.CalendarDialog
-import com.maxkeppeler.sheets.calendar.models.CalendarConfig
-import com.maxkeppeler.sheets.calendar.models.CalendarSelection
-import com.maxkeppeler.sheets.clock.ClockDialog
-import com.maxkeppeler.sheets.clock.models.ClockSelection
 import generateUID
 import getParticipant
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.kotlinx.serializer.KotlinxSerializer
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.readText
-import io.ktor.client.utils.EmptyContent.contentType
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import sendGetRequest
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -210,7 +102,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
     }
-
+    private val client = OkHttpClient()
     var markers by mutableStateOf(listOf<MarkerData>())
 
 
@@ -219,31 +111,28 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 1
     }
 
-    private val client = HttpClient(CIO) {
-        install(Logging) {
-            level = LogLevel.INFO
-        }
-        Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            allowStructuredMapKeys = true
-            encodeDefaults = false
-        }
 
-    }
     var uid_main = ""
-
-
-
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
+        val name = UID(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+        val img = IMG(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+
+        val uid = ID(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+
         val bottomSheet: View = findViewById(R.id.bottomSheet)
         val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        someFunction("$uid")
 
 
         // Устанавливаем начальное состояние
@@ -288,50 +177,18 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
 
 
-
-
-        val name = UID(
-            userData = googleAuthUiClient.getSignedInUser()
-        )
-        val img = IMG(
-            userData = googleAuthUiClient.getSignedInUser()
-        )
-
-        val uid = ID(
-            userData = googleAuthUiClient.getSignedInUser()
-        )
-
-        lifecycleScope.launch {
-            loadMarkers(uid.toString(), getUserKey(this@Main_menu).toString())
-            // Теперь markerList содержит данные, полученные с сервера
-            Log.d("MarkerData_2", "Final list of markers: $markerList")
-
-            val recyclerView: RecyclerView = findViewById(R.id.markerRecyclerView)
-            recyclerView.layoutManager = LinearLayoutManager(this@Main_menu)
-            recyclerView.adapter = MarkerAdapter(markerList)
-            Log.d("MarkerData_2", "MarkerList тут: $markerList")
-        }
-
-
-
-
-
         Log.d("URL_GET_MAKER", "${currentLatLngGlobal.latitude} and ${currentLatLngGlobal.longitude}")
 
 
         uid_main = uid.toString()
 
-        if(getUserKey(this) == "")
-        {
-            sendGetRequest("$uid")
-       }
-
-
-
         Log.d("UserKey", getUserKey(this).toString())
         supportActionBar?.hide()
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+
+        // Пример вызова этой функции из корутины
 
 
 
@@ -349,7 +206,41 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             )
         }
 
+
+        lifecycleScope.launch {
+            try {
+                // Загружаем маркеры в фоновом потоке
+                withContext(Dispatchers.IO) {
+                    loadMarkers(uid.toString(), getUserKey(this@Main_menu).toString())
+                }
+
+                // Обновляем интерфейс пользователя на главном потоке
+                withContext(Dispatchers.Main) {
+                    Log.d("MarkerData_2", "Final list of markers: $markerList")
+
+                    val recyclerView: RecyclerView = findViewById(R.id.markerRecyclerView)
+                    recyclerView.layoutManager = LinearLayoutManager(this@Main_menu)
+
+                    // Передаем реализацию интерфейса в адаптер
+                    recyclerView.adapter = MarkerAdapter(markerList, this@Main_menu)
+
+                    val space = resources.getDimensionPixelSize(R.dimen.space_between_items)
+                    recyclerView.addItemDecoration(SpaceItemDecoration(space))
+
+                    Log.d("MarkerData_2", "MarkerList тут: $markerList")
+                }
+            } catch (e: Exception) {
+                Log.e("MarkerData_2", "Error loading markers or updating UI", e)
+            }
+        }
     }
+
+
+     fun onFindLocation(lat: Double, lon: Double) {
+        findLocation_mark(lat, lon) // Вызов функции перемещения камеры
+    }
+
+
 
      fun showAddMarkerDialog(latLng: LatLng) {
         // Раздуйте макет диалога
@@ -484,6 +375,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                         username = "Ilya",
                         imguser = "Photo",
                         photomark = "photo",
+                        street = "",
                         id = generateUID(),
                         lat = latLng.latitude,
                         lon = latLng.longitude,
@@ -497,13 +389,19 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                         access = access
                     )
 
-                        // markers = markers + markerData // Добавляем новый объект MarkerData в список
+                    // markers = markers + markerData // Добавляем новый объект MarkerData в список
                     addMarker(latLng, markerTitle)
 
                     val gson = Gson()
                     val markerDataJson = gson.toJson(markerData)
                     Log.d("PushDataJoin", "MarkerData JSON: $markerDataJson")
+
+
+                    // server request to add marker by coroutine IO
+                    CoroutineScope(Dispatchers.IO).launch {
                         postInvite(getUserKey(context).toString(),uid_main,  markerData)
+                    }
+
 
                     Log.d("Markersonmap", markers.toString())
                 } else {
@@ -528,6 +426,18 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         polylineOptions = PolylineOptions()
     }
+
+    private  fun someFunction(uid: String) {
+        // Запуск корутины в соответствующем месте
+        CoroutineScope(Dispatchers.IO).launch {
+            if(getUserKey(this@Main_menu) == "")
+            {
+                sendGetRequest("$uid", client, this@Main_menu)
+            }
+
+        }
+    }
+
     private val markerDataMap = mutableMapOf<Marker, MapMarker>()
 
 
@@ -689,9 +599,9 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     }
 
-    private fun showMarkerDialog(marker: MapMarker) {
+   
 
-       // Log.d("markerId", markerId)
+    private fun showMarkerDialog(marker: MapMarker) {
 
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_view_marker, null)
         val marker_image  = dialogView.findViewById<ImageView>(R.id.marker_image)
@@ -730,11 +640,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         dialog.show()
     }
 
-
-
     override fun onMapClick(latLng: LatLng) {
         showAddMarkerDialog(latLng)
-
     }
 
     private fun addMarker(latLng: LatLng, markerName: String): Marker? {    
@@ -762,28 +669,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     }
 
 
-    private fun sendGetRequest(uid: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                // Отправка GET-запроса и получение ответа
-                val response: HttpResponse = client.get("https://meetmap.up.railway.app/checkUser/$uid")
-
-                withContext(Dispatchers.Main) {
-                    // Логирование и использование полученного ключа
-                  //  Log.d("UserKey", response.bodyAsText())
-                    println(response.bodyAsText())
-                }
-                setUserKey(this@Main_menu, response.bodyAsText())
-            } catch (e: Exception) {
-                println("Error: ${e.message}")
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        client.close()
-    }
 
     // Добавьте метод для поиска местоположения по адресу
     private fun findLocation(address: String) {
@@ -808,16 +693,41 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         }
     }
 
+     fun findLocation_mark(lat: Double, lon: Double) {
+        // Создание объекта LatLng с переданными координатами
+        val latLng = LatLng(lat, lon)
+
+        // Проверка, что карта доступна
+        mMap?.let { map ->
+            // Добавление метки на карту
+            // Перемещение камеры к метке
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+        } ?: run {
+            // Обработка случая, когда карта не доступна
+            Toast.makeText(this, "Map is not available", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     suspend fun loadMarkers(uid: String, key: String) {
         try {
-            val markers = getParticipant(uid, key)
-            markerList.addAll(markers)
-            Log.d("MarkerData_2", "Markers added to list: $markerList")
+            // Выполняем функцию на фоновом потоке
+            val markers = withContext(Dispatchers.IO) {
+                getParticipant(uid, key)
+            }
+
+            // Добавляем задержку на 200 миллисекунд
+            delay(200)
+
+            // Возвращаемся на главный поток для работы с UI
+            withContext(Dispatchers.Main) {
+                markerList.addAll(markers)
+                Log.d("MarkerData_2", "Markers added to list: $markerList")
+            }
         } catch (e: Exception) {
             Log.e("MarkerData_2", "Error loading markers", e)
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -867,46 +777,4 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
 
 }
-
-    fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
-        when (icon) {
-            is Int -> {
-                val vectorDrawable = ContextCompat.getDrawable(context, icon)
-                vectorDrawable?.let {
-                    val drawable = DrawableCompat.wrap(it).mutate()
-
-                    val color = Color.fromHex(colorString).toArgb() // Получаем ARGB представление цвета
-
-
-                    DrawableCompat.setTint(drawable, color)
-                    drawable.setBounds(0, 0, width, height) // Устанавливаем заданный размер
-                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                    val canvas = Canvas(bitmap)
-                    drawable.draw(canvas)
-                    return BitmapDescriptorFactory.fromBitmap(bitmap)
-                }
-            }
-            is BitmapDrawable -> {
-                val bitmap = Bitmap.createScaledBitmap(icon.bitmap, width, height, false)
-                return BitmapDescriptorFactory.fromBitmap(bitmap)
-            }
-            else -> {
-                // Обработка других типов источников, если необходимо
-            }
-        }
-        // В случае ошибки возвращаем стандартный маркер
-        return BitmapDescriptorFactory.defaultMarker()
-    }
-
-    fun Color.Companion.fromHex(colorString: String): Color {
-        val colorWithoutHash = colorString.removePrefix("#") // Убираем #, если он есть
-
-        if (colorWithoutHash.length != 6 && colorWithoutHash.length != 8) {
-            throw IllegalArgumentException("Invalid hex color string: $colorString")
-        }
-
-        val color = android.graphics.Color.parseColor("#$colorWithoutHash") // Добавляем #, если его не было
-        return Color(color)
-    }
-
 
