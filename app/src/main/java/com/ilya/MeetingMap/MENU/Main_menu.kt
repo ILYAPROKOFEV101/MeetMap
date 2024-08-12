@@ -222,7 +222,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     recyclerView.layoutManager = LinearLayoutManager(this@Main_menu)
 
                     // Передаем реализацию интерфейса в адаптер
-                    recyclerView.adapter = MarkerAdapter(markerList, this@Main_menu)
+                    recyclerView.adapter = MarkerAdapter(markerList, this@Main_menu, uid.toString())
 
                     val space = resources.getDimensionPixelSize(R.dimen.space_between_items)
                     recyclerView.addItemDecoration(SpaceItemDecoration(space))
@@ -362,7 +362,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val builder = AlertDialog.Builder(this)
         builder.setView(dialogView)
             .setPositiveButton("Да") { dialog, _ ->
-
                 // Получаем текст из EditText
                 val editText = dialogView.findViewById<EditText>(R.id.editname)
                 val markerDescription = editobout.text.toString() // Получаем текст из поля editAbout
@@ -390,7 +389,10 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     )
 
                     // markers = markers + markerData // Добавляем новый объект MarkerData в список
-                    addMarker(latLng, markerTitle)
+
+                    CoroutineScope(Dispatchers.Main).launch {
+                        addMarker(latLng, markerTitle)
+                    }
 
                     val gson = Gson()
                     val markerDataJson = gson.toJson(markerData)
@@ -440,8 +442,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     private val markerDataMap = mutableMapOf<Marker, MapMarker>()
 
-
-
     fun onStandardButtonClick(view: View) {
         mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
     }
@@ -451,8 +451,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
     }
     override fun onMapReady(googleMap: GoogleMap) {
-
-
 
         mMap = googleMap
         mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
@@ -536,12 +534,13 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                                     // Обработка списка маркеров
                                     markers.forEach { mapMarker ->
                                         val markerLatLngnew = LatLng(mapMarker.lat, mapMarker.lon)
-                                        val marker = addMarker(markerLatLngnew, mapMarker.name)
-
-                                        // Проверка на null
-                                        if (marker != null) {
-                                            // Сохраните соответствие между меткой и данными
-                                            markerDataMap[marker] = mapMarker
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            val marker = addMarker(markerLatLngnew, mapMarker.name)
+                                            // Проверка на null
+                                            if (marker != null) {
+                                                // Сохраните соответствие между меткой и данными
+                                                markerDataMap[marker] = mapMarker
+                                            }
                                         }
                                     }
 
@@ -599,8 +598,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     }
 
-   
-
     private fun showMarkerDialog(marker: MapMarker) {
 
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_view_marker, null)
@@ -644,7 +641,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         showAddMarkerDialog(latLng)
     }
 
-    private fun addMarker(latLng: LatLng, markerName: String): Marker? {    
+    private fun addMarker(latLng: LatLng, markerName: String): Marker? {
         // Добавьте новую метку
         val marker = mMap?.addMarker(
             MarkerOptions()
@@ -660,15 +657,12 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     )
                 )
         )
-
         // Сохраните метку в переменную destinationMarker, если нужно
         destinationMarker = marker
 
         // Возвращаем созданную метку
         return marker
     }
-
-
 
     // Добавьте метод для поиска местоположения по адресу
     private fun findLocation(address: String) {
@@ -727,7 +721,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             Log.e("MarkerData_2", "Error loading markers", e)
         }
     }
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
