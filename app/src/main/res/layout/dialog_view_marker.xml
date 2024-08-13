@@ -124,7 +124,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="88dp"
             android:orientation="horizontal">
 
 
@@ -135,16 +135,18 @@
                 android:layout_weight="1"
                 android:background="@drawable/rounded_background"
                 android:text="@string/marker_button_not" />
+
             <Space
                 android:layout_width="5dp"
                 android:layout_height="match_parent" />
+
             <Button
                 android:id="@+id/marker_button_ready"
                 android:layout_width="wrap_content"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/rounded_background"
-                android:text="@string/marker_button_ready"/>
+                android:text="@string/marker_button_ready" />
 
 
         </LinearLayout>

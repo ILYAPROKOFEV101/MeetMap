@@ -1,6 +1,7 @@
 package com.ilya.MeetingMap.Mine_menu
 
 
+import com.ilya.MeetingMap.MENU.Server_API.Became_Participant_fun
 import MapMarker
 import MarkerAdapter
 import MarkerData
@@ -140,7 +141,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         // Устанавливаем начальное состояние свернутого листа
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         // Можно установить максимальную высоту или другие параметры
-        bottomSheetBehavior.peekHeight = 50 // Высота в свернутом состоянии
+        bottomSheetBehavior.peekHeight = 200 // Высота в свернутом состоянии
         // Добавляем слушатель, чтобы отслеживать изменения состояния
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -171,10 +172,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
             }
         })
-
-
-
-
 
 
         Log.d("URL_GET_MAKER", "${currentLatLngGlobal.latitude} and ${currentLatLngGlobal.longitude}")
@@ -606,14 +603,13 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val marker_about_marker = dialogView.findViewById<TextView>(R.id.marker_about_marker)
         val marker_street = dialogView.findViewById<TextView>(R.id.marker_street)
         val marker_start_Date = dialogView.findViewById<TextView>(R.id.marker_start_Date)
-        val marker_end_Time = dialogView.findViewById<TextView>(R.id.marker_end_Date)
         val marker_end_Date = dialogView.findViewById<TextView>(R.id.marker_end_Date)
         val marker_button_not = dialogView.findViewById<Button>(R.id.marker_button_not)
         val marker_button_ready = dialogView.findViewById<Button>(R.id.marker_button_ready)
 
+        val key = getUserKey(this@Main_menu)
 
-
-
+        // Установка данных маркера в элементы диалога
         marker_name.text = marker.name
         marker_about_marker.text = marker.whatHappens
         marker_street.text = ""
@@ -621,21 +617,28 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         marker_end_Date.text = "${marker.endDate} Time:${marker.endTime}"
 
         val builder = AlertDialog.Builder(this)
-
-
-
         builder.setView(dialogView)
-            .setPositiveButton("Да") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setNegativeButton("Отмена") { dialog, _ ->
-                dialog.dismiss()
-            }
 
+        // Создание и показ диалога
         val dialog = builder.create()
         dialog.window?.setBackgroundDrawableResource(R.drawable.rounded_background)
+
+        // Обработка нажатия кнопки "Нет"
+        marker_button_not.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Обработка нажатия кнопки "Готово"
+        marker_button_ready.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                Became_Participant_fun(uid_main, key.toString(), marker.id)
+            }
+            dialog.dismiss()
+        }
+
         dialog.show()
     }
+
 
     override fun onMapClick(latLng: LatLng) {
         showAddMarkerDialog(latLng)

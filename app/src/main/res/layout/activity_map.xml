@@ -109,7 +109,7 @@
             android:layout_width="match_parent"
             android:layout_height="400dp"
             android:background="@drawable/rounded_background"
-            android:minHeight="40dp"
+            android:minHeight="90dp"
             android:orientation="vertical"
 
             android:padding="10dp"

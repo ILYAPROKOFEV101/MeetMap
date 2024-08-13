@@ -1,20 +1,7 @@
 package com.ilya.MeetingMap.MENU.Server_API
 
 import MarkerData
-import android.annotation.SuppressLint
-import android.app.VoiceInteractor
-import android.content.Context
 import android.util.Log
-import com.ilya.reaction.logik.PreferenceHelper.setUserKey
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -24,7 +11,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Path
-import java.io.IOException
 
 interface Post_Mark {
     @POST("/mark/{uid}/{key}")
