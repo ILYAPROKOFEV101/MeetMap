@@ -2,12 +2,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.location.Address
+import android.location.Geocoder
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import java.io.IOException
+import java.util.Locale
 
 fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
     when (icon) {
@@ -53,3 +57,23 @@ fun Color.Companion.fromHex(colorString: String): Color {
 }
 
 
+fun getAddressFromLatLon(context: Context, lat: Double, lon: Double): String? {
+    val geocoder = Geocoder(context, Locale.getDefault())
+    val addresses: List<Address>?
+    val address: Address?
+    var addressText: String? = null
+
+    try {
+        // Получаем список адресов по координатам
+        addresses = geocoder.getFromLocation(lat, lon, 1)
+
+        if (addresses != null && addresses.isNotEmpty()) {
+            address = addresses[0]
+            addressText = address.getAddressLine(0) // Получаем полный адрес
+        }
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+
+    return addressText
+}

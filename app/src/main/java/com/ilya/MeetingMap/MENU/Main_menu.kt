@@ -545,14 +545,9 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                                     // Обработка ошибки
                                     Log.e("MarkerData", "Error fetching markers", e)
                                 }
-                                // Задержка на 30 секунд
-                                delay(30000)
                             }
+
                         }
-
-
-
-
 
                         // Отслеживание скорости и расстояния
                         updateSpeed(it.speed)
@@ -586,7 +581,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         // Инициализация объекта Polyline для отображения маршрута
         polyline = mMap.addPolyline(PolylineOptions().width(5f).color(android.graphics.Color.BLUE))
 
-// Добавьте обработчик для кнопки проложения маршрута
+            // Добавьте обработчик для кнопки проложения маршрута
         val routeButton = findViewById<ImageView>(R.id.routeButton)
         routeButton.setOnClickListener {
 
