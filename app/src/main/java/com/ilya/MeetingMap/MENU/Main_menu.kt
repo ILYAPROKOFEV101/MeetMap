@@ -73,6 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import post_user_info
 import sendGetRequest
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -130,10 +131,19 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val uid = ID(
             userData = googleAuthUiClient.getSignedInUser()
         )
+            // Запуск корутины в соответствующем месте
+            CoroutineScope(Dispatchers.IO).launch {
+                if(getUserKey(this@Main_menu) == "")
+                {
+                    sendGetRequest("$uid", client, this@Main_menu)
+                }
+                getUserKey(this@Main_menu)?.let { post_user_info(it, uid.toString(), name.toString(), img.toString()) }
+            }
+
 
         val bottomSheet: View = findViewById(R.id.bottomSheet)
         val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        someFunction("$uid")
+
 
 
         // Устанавливаем начальное состояние
@@ -426,16 +436,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         polylineOptions = PolylineOptions()
     }
 
-    private  fun someFunction(uid: String) {
-        // Запуск корутины в соответствующем месте
-        CoroutineScope(Dispatchers.IO).launch {
-            if(getUserKey(this@Main_menu) == "")
-            {
-                sendGetRequest("$uid", client, this@Main_menu)
-            }
 
-        }
-    }
 
     private val markerDataMap = mutableMapOf<Marker, MapMarker>()
 

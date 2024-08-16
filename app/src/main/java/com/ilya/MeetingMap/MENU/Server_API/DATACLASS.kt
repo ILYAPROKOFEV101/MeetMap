@@ -22,3 +22,9 @@ data class MapMarker(
     val participants: Int,
     val access: Boolean
 )
+
+
+data class Post_User_info_data(
+    val name: String,
+    val img: String
+)
