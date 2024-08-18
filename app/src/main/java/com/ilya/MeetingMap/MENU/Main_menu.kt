@@ -6,6 +6,7 @@ import MapMarker
 import MarkerAdapter
 import MarkerData
 import SpaceItemDecoration
+import WebSocketManager
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
@@ -56,7 +57,7 @@ import com.google.android.material.timepicker.TimeFormat
 import com.google.gson.Gson
 import com.ilya.MeetingMap.MENU.Server_API.getMarker
 import com.ilya.MeetingMap.MENU.Server_API.postInvite
-
+import com.ilya.MeetingMap.MENU.shake_logik.ShakeDetector
 
 
 import com.ilya.MeetingMap.R
@@ -106,7 +107,11 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     }
     private val client = OkHttpClient()
     var markers by mutableStateOf(listOf<MarkerData>())
+    private lateinit var shakeDetector: ShakeDetector
 
+
+
+    val webSocketManager = WebSocketManager(client)
 
 
     private companion object {
@@ -131,6 +136,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val uid = ID(
             userData = googleAuthUiClient.getSignedInUser()
         )
+
             // Запуск корутины в соответствующем месте
             CoroutineScope(Dispatchers.IO).launch {
                 if(getUserKey(this@Main_menu) == "")
@@ -139,6 +145,10 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 }
                 getUserKey(this@Main_menu)?.let { post_user_info(it, uid.toString(), name.toString(), img.toString()) }
             }
+
+
+
+
 
 
         val bottomSheet: View = findViewById(R.id.bottomSheet)
@@ -241,6 +251,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         }
     }
+
+
 
 
      fun onFindLocation(lat: Double, lon: Double) {
@@ -550,6 +562,18 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
                         }
 
+                        shakeDetector = ShakeDetector(this, object : ShakeDetector.OnShakeListener {
+                            override fun onShake() {
+                                val key = getUserKey(this@Main_menu)
+                                val url = "ws://meetmap.up.railway.app/shake/$key/${currentLatLng.latitude}/${currentLatLng.longitude}"
+                                webSocketManager.setupWebSocket(url)
+                                // Ваш код, который будет выполняться при тряске
+                                Toast.makeText(this@Main_menu, "Телефон трясут!", Toast.LENGTH_SHORT).show()
+                            }
+                        })
+
+
+
                         // Отслеживание скорости и расстояния
                         updateSpeed(it.speed)
                         updateDistance(it)
@@ -765,6 +789,11 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             distanceTextView?.text = String.format("Distance: %.2f meters", totalDistance)
         }
         lastLocation = location
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        shakeDetector.stop()  // Останавливаем детектор, когда activity уничтожается
     }
 
 
