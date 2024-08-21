@@ -25,16 +25,16 @@ suspend fun getParticipant(uid: String, key: String): List<MarkerData> {
     return withContext(Dispatchers.IO) {
         try {
             val markerData = apiService.getParticipant(uid, key)
-            Log.d("MarkerData", "Received marker data: $markerData")
+            Log.d("MarkerData_getParticipant", "Received marker data: $markerData")
             markerData
         } catch (e: HttpException) {
-            Log.e("MarkerData", "HTTP error: ${e.code()}", e)
+            Log.e("MarkerData_getParticipant", "HTTP error: ${e.code()}", e)
             throw e
         } catch (e: IOException) {
-            Log.e("MarkerData", "Network error", e)
+            Log.e("MarkerData_getParticipant", "Network error", e)
             throw e
         } catch (e: Exception) {
-            Log.e("MarkerData", "Unknown error", e)
+            Log.e("MarkerData_getParticipant", "Unknown error", e)
             throw e
         }
 

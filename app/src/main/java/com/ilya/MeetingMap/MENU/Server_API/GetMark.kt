@@ -34,10 +34,10 @@ suspend fun getMarker(uid: String, latLng: LatLng): List<MapMarker> {
     return withContext(Dispatchers.IO) {
         try {
             val markerData = apiService.getMarker(uid, latLng.latitude, latLng.longitude)
-            Log.d("MarkerData", "Received marker data: $markerData")
+            Log.d("MarkerData_getMarker", "Received marker data: $markerData")
             markerData
         } catch (e: Exception) {
-            Log.d("MarkerData", "Error fetching marker data", e)
+            Log.d("MarkerData_getMarker", "Error fetching marker data", e)
             throw e
         }
     }

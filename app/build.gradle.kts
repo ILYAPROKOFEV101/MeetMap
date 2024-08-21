@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("com.google.gms.google-services")
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 android {
@@ -73,6 +74,7 @@ dependencies {
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.transport.runtime)
     implementation(libs.protolite.well.known.types)
+    implementation(libs.firebase.database.ktx)
     testImplementation(libs.junit)
 
     implementation("io.coil-kt:coil-compose:2.4.0") // Coil для загрузки изображений (Compose)
@@ -130,6 +132,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(libs.jetbrains.kotlinx.serialization.json) // Используйте актуальную версию kotlinx-serialization-json
 
 
 

@@ -17,7 +17,7 @@ class ShakeDetector(
     private val accelerometer: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
     private var lastShakeTime: Long = 0
-    private val shakeThresholdGravity = 2.7f
+    private val shakeThresholdGravity = 5f
     private val shakeSlopTimeMs = 500
 
     init {

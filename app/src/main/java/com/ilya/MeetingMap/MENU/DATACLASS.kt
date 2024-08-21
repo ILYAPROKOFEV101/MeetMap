@@ -13,7 +13,7 @@ data class MapViewState(
     val userLocation: LatLng? = null,
     val userMarker: Marker? = null
 )
-
+@Serializable
 data class MarkerData(
     val key: String,
     val username: String,
