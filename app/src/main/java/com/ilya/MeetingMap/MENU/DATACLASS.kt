@@ -33,3 +33,24 @@ data class MarkerData(
     val access: Boolean
 )
 
+// для конвертации данных
+fun markerDataToMapMarker(markerData: MarkerData): MapMarker {
+    return MapMarker(
+        key = markerData.key,
+        username = markerData.username,
+        imguser = markerData.imguser,
+        photomark = markerData.photomark,
+        street = markerData.street,
+        id = markerData.id,
+        lat = markerData.lat,
+        lon = markerData.lon,
+        name = markerData.name,
+        whatHappens = markerData.whatHappens,
+        startDate = markerData.startDate,
+        endDate = markerData.endDate,
+        startTime = markerData.startTime,
+        endTime = markerData.endTime,
+        participants = markerData.participants,
+        access = markerData.access
+    )
+}

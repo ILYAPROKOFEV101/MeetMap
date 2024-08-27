@@ -45,6 +45,11 @@ object PreferenceHelper {
         return getSharedPreferences(context).getString(KEY_USER_TEXT, "")
     }
 
+    fun removeUserKey(context: Context) {
+        val editor = getSharedPreferences(context).edit()
+        editor.remove(KEY_USER_TEXT)
+        editor.apply()
+    }
 
     fun saveRoomId(context: Context, roomId: String) {
         val editor = getSharedPreferences(context).edit()

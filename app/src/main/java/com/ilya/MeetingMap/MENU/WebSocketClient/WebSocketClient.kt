@@ -1,7 +1,11 @@
 package com.ilya.MeetingMap.MENU.WebSocketClient
 
 import MarkerData
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -13,61 +17,79 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 
 
-
-
-class WebSocketClient {
+open class WebSocketClient(private val url: String) {
     private val client = OkHttpClient()
-    private lateinit var webSocket: okhttp3.WebSocket
+    private lateinit var webSocket: WebSocket
+    private var deferredResponse: CompletableDeferred<String>? = null
 
-    fun start(url: String) {
+    private val listener = object : WebSocketListener() {
+        override fun onOpen(webSocket: WebSocket, response: Response) {
+            Log.d("WebSocket", "Connected to the server")
+            onConnectionOpened()
+        }
+
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            Log.d("WebSocket", "Received message: $text")
+            handleResponse(text)
+        }
+
+        override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            Log.d("WebSocket", "Closing: $code / $reason")
+            onConnectionClosing(code, reason)
+        }
+
+        override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+            Log.e("WebSocket", "Error: ${t.message}", t)
+            deferredResponse?.completeExceptionally(t)
+            onConnectionFailure(t, response)
+            retryConnection()
+        }
+    }
+
+    fun start() {
         val request = Request.Builder().url(url).build()
-        val listener = EchoWebSocketListener()
         webSocket = client.newWebSocket(request, listener)
-        client.dispatcher.executorService.shutdown()
     }
 
     fun sendMessage(message: String) {
-        webSocket.send(message)
+        if (::webSocket.isInitialized) {
+            webSocket.send(message)
+            Log.d("WebSocket", "Sent: $message")
+        } else {
+            Log.e("WebSocket", "WebSocket is not initialized!")
+        }
     }
 
     fun close() {
-        webSocket.close(1000, "Goodbye!")
+        if (::webSocket.isInitialized) {
+            webSocket.close(1000, "Goodbye!")
+        } else {
+            Log.e("WebSocket", "WebSocket is not initialized!")
+        }
     }
 
-    private inner class EchoWebSocketListener : WebSocketListener() {
-        override fun onOpen(webSocket: okhttp3.WebSocket, response: Response) {
-            Log.d("WebSocket", "Connected to the server")
-        }
+    open fun onConnectionOpened() {}
+    open fun onConnectionClosing(code: Int, reason: String) {}
+    open fun onConnectionFailure(t: Throwable, response: Response?) {}
 
-        override fun onMessage(webSocket: okhttp3.WebSocket, text: String) {
-            Log.d("WebSocket", "Received: $text")
-            handleReceivedMessage(text)
-        }
+    fun sendCommandAndGetResponse(command: String): Deferred<String> {
+        deferredResponse = CompletableDeferred()
+        sendMessage(command)
+        return deferredResponse!!
+    }
 
-        override fun onMessage(webSocket: okhttp3.WebSocket, bytes: ByteString) {
-            Log.d("WebSocket", "Received bytes: ${bytes.hex()}")
+    private fun handleResponse(text: String) {
+        Log.d("WebSocket", "Received message: $text")
+        deferredResponse?.let {
+            it.complete(text)
+            deferredResponse = null
         }
+    }
 
-        override fun onClosing(webSocket: okhttp3.WebSocket, code: Int, reason: String) {
-            webSocket.close(1000, null)
-            Log.d("WebSocket", "Closing: $code / $reason")
-        }
-
-        override fun onFailure(webSocket: okhttp3.WebSocket, t: Throwable, response: Response?) {
-            Log.e("WebSocket", "Error: ${t.message}", t)
-        }
-
-        private fun handleReceivedMessage(text: String) {
-            // Преобразуем JSON в список объектов MarkerData
-            try {
-                val markers = Json.decodeFromString<List<MarkerData>>(text)
-                // Далее можно обновить UI или выполнить другую обработку
-                markers.forEach {
-                    Log.d("WebSocket", "Marker: $it")
-                }
-            } catch (e: Exception) {
-                Log.e("WebSocket", "Error parsing JSON: ${e.message}")
-            }
-        }
+    private fun retryConnection() {
+        Log.d("WebSocket", "Retrying connection in 2 seconds...")
+        Handler(Looper.getMainLooper()).postDelayed({
+            start()
+        }, 2000)
     }
 }

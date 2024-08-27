@@ -116,6 +116,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.ilya.MeetingMap.Mine_menu.Main_menu
+import com.ilya.reaction.logik.PreferenceHelper.removeUserKey
 
 
 class MainActivity : ComponentActivity() {
@@ -222,7 +223,7 @@ class MainActivity : ComponentActivity() {
                                     onSignOut = {
                                         lifecycleScope.launch {
                                             googleAuthUiClient.signOut()
-
+                                            removeUserKey(this@MainActivity)
                                             Toast.makeText(
                                                 applicationContext,
                                                 "Goodbye",
@@ -679,7 +680,6 @@ fun ButtonAppBar(navController: NavController) {
 
                 navController.addOnDestinationChangedListener { _, destination, _ ->
                     selectedItemIndex = when (destination.route) {
-                        //"user_log_in" -> 0
                         "admin_fragment" -> 0
                         else -> selectedItemIndex
                     }

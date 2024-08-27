@@ -3,7 +3,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserKeyResponse(val userKey: String)
 
-
+@Serializable
 data class MapMarker(
     val key: String,
     val username: String,
