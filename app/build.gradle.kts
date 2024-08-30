@@ -134,8 +134,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation(libs.jetbrains.kotlinx.serialization.json) // Используйте актуальную версию kotlinx-serialization-json
+    implementation (libs.konfetti.xml)
 
 
+    implementation (libs.glide) // load image
 
 
 

@@ -18,6 +18,7 @@ import org.json.JSONObject
 import okhttp3.*
 
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 
 class WebSocketManager(
     private val client: OkHttpClient,
@@ -80,6 +81,7 @@ class WebSocketManager(
                     isConnected = false
                     Log.e("WebSocket", "WebSocket failure: ${t.message}. Response: $response")
                 }
+
             })
         } catch (e: Exception) {
             Log.e("WebSocket", "Error creating WebSocket: ${e.message}")
@@ -89,16 +91,29 @@ class WebSocketManager(
 
     // Обработка полученного сообщения
     fun handleReceivedMessage(message: String) {
+
         try {
             val gson = Gson()
-            val receivedData = gson.fromJson(message, ReceivedData::class.java)
-            Log.d("WebSocket", "Received data: ${receivedData.user_name}, ${receivedData.img}, ${receivedData.key}")
+            var receivedDataList: List<WebSocketManager.ReceivedData>
+
+            // Попробуем сначала распарсить как массив
+            try {
+                receivedDataList = gson.fromJson(message, Array<WebSocketManager.ReceivedData>::class.java).toList()
+            } catch (e: JsonSyntaxException) {
+                // Если не удалось, попробуем распарсить как одиночный объект
+                val singleData = gson.fromJson(message, WebSocketManager.ReceivedData::class.java)
+                receivedDataList = listOf(singleData)
+            }
+
+            Log.d("WebSocket", "Received data count: ${receivedDataList.size}")
+
             // Возвращаем данные через callback
-            callback?.onMessageReceived(receivedData)
+            callback?.onMessageReceived(receivedDataList)
         } catch (e: Exception) {
             Log.e("WebSocket", "Error parsing JSON: ${e.message}")
         }
     }
+
 
     // Функция закрытия WebSocket
     fun closeWebSocket() {

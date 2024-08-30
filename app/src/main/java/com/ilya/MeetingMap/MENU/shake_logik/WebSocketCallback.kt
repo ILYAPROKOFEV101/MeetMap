@@ -1,3 +1,5 @@
 interface WebSocketCallback {
-    fun onMessageReceived(data: WebSocketManager.ReceivedData)
+    fun onMessageReceived(dataList: List<WebSocketManager.ReceivedData>)
+
+
 }

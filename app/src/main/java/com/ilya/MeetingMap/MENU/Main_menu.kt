@@ -9,6 +9,7 @@ import SpaceItemDecoration
 import WebSocketCallback
 import WebSocketManager
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -56,9 +57,12 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.gson.Gson
+import com.ilya.MeetingMap.MENU.Server_API.getMarker
 
 import com.ilya.MeetingMap.MENU.Server_API.postInvite
+import com.ilya.MeetingMap.MENU.WebSocketClient.Friends_type
 import com.ilya.MeetingMap.MENU.WebSocketClient.WebSocketClient
+import com.ilya.MeetingMap.MENU.WebSocketClient.show_friends.show_friends_one
 import com.ilya.MeetingMap.MENU.shake_logik.ShakeDetector
 
 
@@ -70,26 +74,31 @@ import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 import generateUID
 import getAddressFromCoordinates
-import getParticipant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import markerDataToMapMarker
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.core.models.Shape
+import nl.dionsegijn.konfetti.core.models.Size
+import nl.dionsegijn.konfetti.xml.KonfettiView
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
-import okio.ByteString
 import post_user_info
 import sendGetRequest
+import show_friends_two
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -107,6 +116,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     private var destinationMarker: Marker? = null
     private lateinit var polyline: Polyline
     private lateinit var webSocketClient: WebSocketClient
+    private var currentDialog: AlertDialog? = null
+    private val collectedFriends = mutableListOf<Friends_type>()
 
     var currentLatLngGlobal by mutableStateOf<LatLng>(LatLng(0.0, 0.0))
     private val googleAuthUiClient by lazy {
@@ -135,7 +146,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val url = "wss://meetmap.up.railway.app/map/$uid_user/${getUserKey(this)}"
         webSocketClient = WebSocketClient(url)
         webSocketClient.start()
-
 
 
 
@@ -212,45 +222,57 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
-        val key =  getUserKey(this@Main_menu)
-        // работа по  отоброжению  моих метак
+        val mutex = Mutex()
 
+
+        var previousMarkers: List<MarkerData> = emptyList()
 
         lifecycleScope.launch {
-            val markerList: MutableList<MarkerData> = mutableListOf()
             while (true) {
-                try {
-                    val response = webSocketClient.sendCommandAndGetResponse("get_participant_mark $uid_main ${getUserKey(this@Main_menu)}").await()
-                    Log.d("WebSocket i got", " $response")
+                mutex.withLock {
 
-                    // Обрабатываем полученные данные
-                    handleReceivedMarkers(response, "$uid", markerList)
+                        val markerList: MutableList<MarkerData> = mutableListOf()
+                        while (true) {
+                            try {
+                                val response = webSocketClient.sendCommandAndGetResponse("get_participant_mark $uid_main ${getUserKey(this@Main_menu)}").await()
+                                Log.d("WebSocket i got", " $response")
 
-                    val markers = Json.decodeFromString<List<MarkerData>>(response)
-                    withContext(Dispatchers.Main) {
-                        // Обновление UI или выполнение других действий с данными
-                        markers.forEach { markerData ->
-                            Log.d("WebSocket", "Marker: $markerData")
+                                // Обрабатываем полученные данные
+                                handleReceivedMarkers(response, "$uid", markerList)
 
-                            // Преобразование MarkerData в MapMarker
-                            val mapMarker = markerDataToMapMarker(markerData)
+                                val markers = Json.decodeFromString<List<MarkerData>>(response)
+                                withContext(Dispatchers.Main) {
+                                    // Обновление UI или выполнение других действий с данными
+                                    markers.forEach { markerData ->
+                                        Log.d("WebSocket", "Marker: $markerData")
 
-                            // Добавление маркера на карту
-                            val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
-                            val marker = addMarker(markerLatLng, mapMarker.name)
-                            if (marker != null) {
-                                markerDataMap[marker] = mapMarker
+                                        // Преобразование MarkerData в MapMarker
+                                        val mapMarker = markerDataToMapMarker(markerData)
+
+                                        // Добавление маркера на карту
+                                        val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
+                                        val marker = addMarker(markerLatLng, mapMarker.name)
+                                        if (marker != null) {
+                                            markerDataMap[marker] = mapMarker
+                                        }
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Log.e("WebSocket", "Error processing markers", e)
                             }
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e("WebSocket", "Error processing markers", e)
-                }
 
-                // Пауза перед следующим запросом
-                delay(10000) // 10 секунд
+                            // Пауза перед следующим запросом
+                            delay(10000) // 10 секунд
+
+                    }
+                }
             }
         }
+
+
+
+
+
     }
 
     private suspend fun handleReceivedMarkers(jsonData: String, uid: String, markerList: MutableList<MarkerData>) {
@@ -293,20 +315,66 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         }
     }
-
+        // Вызов алерт диалог , для тогочтобы показать друга
     // Реализация метода интерфейса WebSocketCallback
-    override fun onMessageReceived(data: WebSocketManager.ReceivedData) {
-        runOnUiThread {
-            Toast.makeText(this, "Получены данные: ${data.user_name}, ${data.img}, ${data.key}", Toast.LENGTH_LONG).show()
-            // Обновление UI или выполнение других действий
-        }
-    }
+        override fun onMessageReceived(dataList: List<WebSocketManager.ReceivedData>) {
+            runOnUiThread {
+                if (dataList.isEmpty()) return@runOnUiThread
 
-     fun onFindLocation(lat: Double, lon: Double) {
+                // Преобразуем список ReceivedData в список Friends_type
+                val newFriends = dataList.map { data ->
+                    Friends_type(
+                        name = data.user_name,
+                        img = data.img,
+                        key = data.key
+                    )
+                }
+
+                // Добавляем новых друзей в список собранных данных
+                collectedFriends.addAll(newFriends)
+
+                // Если в списке два или больше друга, обновляем диалог
+                if (collectedFriends.size >= 2) {
+                    currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
+                    show_friends_two(this, collectedFriends)
+                    collectedFriends.clear()  // Очищаем список после отображения
+                }
+                else if (collectedFriends.size == 1) {
+                    currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
+                    show_friends_one(this, collectedFriends)
+                    collectedFriends.clear()  // Очищаем список после отображения
+                }
+
+                // Показать конфетти
+                val konfettiView = findViewById<KonfettiView>(R.id.konfettiView_map)
+                val emitterConfig = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
+                konfettiView.start(
+                    Party(
+                        speed = 0f,
+                        maxSpeed = 30f,
+                        damping = 0.9f,
+                        spread = 360,
+                        colors = listOf(Color.YELLOW, Color.GREEN, Color.MAGENTA),
+                        position = Position.Relative(0.5, 0.0),
+                        size = listOf(Size.SMALL, Size.LARGE),
+                        timeToLive = 3000L,
+                        shapes = listOf(Shape.Square),
+                        emitter = emitterConfig
+                    )
+                )
+
+                // Показываем Toast с информацией о первой записи
+                val firstData = dataList.first()
+                Toast.makeText(this, "Получены данные: ${firstData.user_name}, ${firstData.img}, ${firstData.key}", Toast.LENGTH_LONG).show()
+            }
+        }
+
+
+    fun onFindLocation(lat: Double, lon: Double) {
         findLocation_mark(lat, lon) // Вызов функции перемещения камеры
     }
 
-     fun showAddMarkerDialog(latLng: LatLng) {
+    fun showAddMarkerDialog(latLng: LatLng) {
         // Раздуйте макет диалога
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_marker, null)
         var access = false // Переменная для хранения состояния Switch
@@ -561,7 +629,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             fusedLocationClient.lastLocation
                 .addOnSuccessListener { location: Location? ->
                     location?.let {
-                        val currentLatLng = LatLng(it.latitude, it.longitude)
+                        var currentLatLng = LatLng(it.latitude, it.longitude)
+                        currentLatLngGlobal = currentLatLng
                         //   mMap.addMarker(MarkerOptions().position(currentLatLng).title("You are here"))
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
 
@@ -569,38 +638,26 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                         lifecycleScope.launch {
                             while (true) {
                                 try {
-                                    delay(5000)
-
-                                    Log.d("WebSocket", "Sending command: get_mark $uid_main ${currentLatLng.latitude} ${currentLatLng.longitude}")
-                                    val publicMarkersResponse = webSocketClient.sendCommandAndGetResponse("get_mark $uid_main ${currentLatLng.latitude} ${currentLatLng.longitude}").await()
-                                    Log.d("WebSocket public marker", "Response: $publicMarkersResponse")
-
-                                    // Логирование каждого отдельного JSON-объекта для лучшего понимания проблемы
-                                    val jsonObjects = publicMarkersResponse.split("\n").filter { it.isNotBlank() }
-                                    jsonObjects.forEach { Log.d("WebSocket public marker", "JSON Object: $it") }
-
-                                    // Объединение и десериализация
-                                    val jsonArray = "[${jsonObjects.joinToString(",")}]"
-                                    Log.d("WebSocket public marker", "JSON Array: $jsonArray")
-                                    val publicMarkers = Json.decodeFromString<List<MarkerData>>(jsonArray)
-
-                                    withContext(Dispatchers.Main) {
-                                        mMap?.let { map ->
-                                            map.clear()
-                                            publicMarkers.forEach { markerData ->
-                                                val mapMarker = markerDataToMapMarker(markerData)
-                                                val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
-                                                addMarker(markerLatLng, mapMarker.name)
-                                                Log.d("addMarker", "Marker added: $mapMarker")
+                                    val markers = getMarker(uid_main, LatLng(it.latitude, it.longitude))
+                                    // Обработка списка маркеров
+                                    markers.forEach { mapMarker ->
+                                        val markerLatLngnew = LatLng(mapMarker.lat, mapMarker.lon)
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            val marker = addMarker(markerLatLngnew, mapMarker.name)
+                                            // Проверка на null
+                                            if (marker != null) {
+                                                // Сохраните соответствие между меткой и данными
+                                                markerDataMap[marker] = mapMarker
                                             }
-                                        } ?: Log.e("WebSocket", "Map is not initialized.")
+                                        }
                                     }
-                                } catch (e: Exception) {
-                                    Log.e("WebSocket", "Error processing public markers", e)
-                                }
 
-                                delay(10000) // 10 секунд задержки
+                                } catch (e: Exception) {
+                                    // Обработка ошибки
+                                    Log.e("MarkerData", "Error fetching markers", e)
+                                }
                             }
+
                         }
 
 
@@ -618,6 +675,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                                     val url = "wss://meetmap.up.railway.app/shake/$key/${currentLatLng.latitude}/${currentLatLng.longitude}"
                                     webSocketManager.setupWebSocket(url)
 
+                                  //  show_friends_one(this@Main_menu, )
                                     // Ваш код, который будет выполняться при тряске
                                     Toast.makeText(this@Main_menu, "Телефон трясут!", Toast.LENGTH_SHORT).show()
                                 } else {
@@ -820,6 +878,19 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     private fun generateUniqueRequestId(): String {
         // Генерация уникального идентификатора для запроса
         return System.currentTimeMillis().toString()
+    }
+
+
+
+
+    fun isValidJson(json: String): Boolean {
+        return try {
+            Json.parseToJsonElement(json)
+            true
+        } catch (e: Exception) {
+            Log.e("WebSocket", "Invalid JSON: $json", e)
+            false
+        }
     }
 
 

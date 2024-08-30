@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MeetMap"
 include(":app")
+include(":mapmarker")
