@@ -77,7 +77,7 @@ dependencies {
     implementation(libs.firebase.database.ktx)
     testImplementation(libs.junit)
 
-    implementation("io.coil-kt:coil-compose:2.4.0") // Coil для загрузки изображений (Compose)
+    implementation(libs.coil.compose) // Coil для загрузки изображений (Compose)
     implementation(platform("com.google.firebase:firebase-bom:33.1.1")) // Firebase Bill of Materials (BOM)
     implementation("com.google.firebase:firebase-auth-ktx") // Firebase Authentication (Kotlin)
     implementation("com.google.android.gms:play-services-auth:21.2.0") // Google Play Services Auth
@@ -99,7 +99,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.8")
     implementation("com.google.android.gms:play-services-location:21.3.0") // Or the latest version
     implementation (libs.material.v150)
-    implementation ("com.google.android.material:material:1.12.0")
+    implementation (libs.material)
 
     // Server setings
 
@@ -111,7 +111,7 @@ dependencies {
     implementation(libs.ktor.client.json)          // Работа с JSON
     implementation(libs.ktor.client.serialization) // Сериализация
     implementation(libs.ktor.client.content.negotiation)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // JSON сериализация от kotlinx
+    implementation(libs.kotlinx.serialization.json.v160) // JSON сериализация от kotlinx
 // retrofit
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
@@ -138,6 +138,11 @@ dependencies {
 
 
     implementation (libs.glide) // load image
+    implementation (libs.glide) // load image
+    implementation (libs.okhttp.v4120) // Websoket liber for conect
+    implementation (libs.logging.interceptor)
+
+
 
 
 

@@ -17,7 +17,7 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 
 
-open class WebSocketClient(private val url: String) {
+class  WebSocketClient(private val url: String) : WebSocketListener() {
     private val client = OkHttpClient()
     private lateinit var webSocket: WebSocket
     private var deferredResponse: CompletableDeferred<String>? = null

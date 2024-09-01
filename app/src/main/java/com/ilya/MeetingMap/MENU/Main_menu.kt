@@ -222,58 +222,64 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
-        val mutex = Mutex()
 
-
-        var previousMarkers: List<MarkerData> = emptyList()
-
+            // получаю данные по метка где я участник, по websoket
         lifecycleScope.launch {
+            var previousMarkers: List<MarkerData>? = null // Храним предыдущие данные
             while (true) {
-                mutex.withLock {
+                val markerList: MutableList<MarkerData> = mutableListOf()
+                while (true) {
+                    try {
+                        // Ждем завершения асинхронного запроса
+                        val response = webSocketClient.sendCommandAndGetResponse("get_participant_mark $uid_main ${getUserKey(this@Main_menu)}").await()
+                        Log.d("WebSocket i got", " $response")
 
-                        val markerList: MutableList<MarkerData> = mutableListOf()
-                        while (true) {
-                            try {
-                                val response = webSocketClient.sendCommandAndGetResponse("get_participant_mark $uid_main ${getUserKey(this@Main_menu)}").await()
-                                Log.d("WebSocket i got", " $response")
+                        // Декодируем текущие данные из ответа
+                        val currentMarkers = Json.decodeFromString<List<MarkerData>>(response)
 
-                                // Обрабатываем полученные данные
-                                handleReceivedMarkers(response, "$uid", markerList)
+                        // Сравниваем текущие данные с предыдущими
+                        if (currentMarkers != previousMarkers) {
+                            // Данные изменились, обрабатываем их
+                            handleReceivedMarkers(response, "$uid", markerList)
 
-                                val markers = Json.decodeFromString<List<MarkerData>>(response)
-                                withContext(Dispatchers.Main) {
-                                    // Обновление UI или выполнение других действий с данными
-                                    markers.forEach { markerData ->
-                                        Log.d("WebSocket", "Marker: $markerData")
+                            withContext(Dispatchers.Main) {
+                                // Обновление UI или выполнение других действий с данными
+                                currentMarkers.forEach { markerData ->
+                                    Log.d("WebSocket", "Marker: $markerData")
 
-                                        // Преобразование MarkerData в MapMarker
-                                        val mapMarker = markerDataToMapMarker(markerData)
+                                    // Преобразование MarkerData в MapMarker
+                                    val mapMarker = markerDataToMapMarker(markerData)
 
-                                        // Добавление маркера на карту
-                                        val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
-                                        val marker = addMarker(markerLatLng, mapMarker.name)
-                                        if (marker != null) {
-                                            markerDataMap[marker] = mapMarker
-                                        }
+                                    // Добавление маркера на карту
+                                    val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
+                                    val marker = addMarker(markerLatLng, mapMarker.name)
+                                    if (marker != null) {
+                                        markerDataMap[marker] = mapMarker
                                     }
                                 }
-                            } catch (e: Exception) {
-                                Log.e("WebSocket", "Error processing markers", e)
                             }
+                        } else {
+                            Log.d("WebSocket", "Markers unchanged, skipping handleReceivedMarkers")
+                        }
 
-                            // Пауза перед следующим запросом
-                            delay(10000) // 10 секунд
-
+                        // Обновляем предыдущие данные
+                        previousMarkers = currentMarkers
+                    } catch (e: Exception) {
+                        Log.e("WebSocket", "Error processing markers", e)
                     }
+                    // Пауза перед следующим запросом
+                    delay(10000) // 10 секунд
                 }
             }
         }
 
 
 
-
-
     }
+
+    private var isItemDecorationAdded = false // Флаг
+
+
 
     private suspend fun handleReceivedMarkers(jsonData: String, uid: String, markerList: MutableList<MarkerData>) {
         // Проверяем, что jsonData начинается с '['
@@ -301,8 +307,12 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 val recyclerView: RecyclerView = findViewById(R.id.markerRecyclerView)
                 recyclerView.layoutManager = LinearLayoutManager(this@Main_menu)
 
-                val space = resources.getDimensionPixelSize(R.dimen.space_between_items)
-                recyclerView.addItemDecoration(SpaceItemDecoration(space))
+                // Добавляем ItemDecoration только один раз
+                if (!isItemDecorationAdded) {
+                    val space = resources.getDimensionPixelSize(R.dimen.space_between_items)
+                    recyclerView.addItemDecoration(SpaceItemDecoration(space))
+                    isItemDecorationAdded = true
+                }
 
                 val adapter = recyclerView.adapter
                 if (adapter is MarkerAdapter) {
@@ -315,6 +325,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         }
     }
+
+
         // Вызов алерт диалог , для тогочтобы показать друга
     // Реализация метода интерфейса WebSocketCallback
         override fun onMessageReceived(dataList: List<WebSocketManager.ReceivedData>) {
@@ -672,7 +684,9 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                                     lastShakeTime = currentTime // Обновляем время последнего вызова
 
                                     val key = getUserKey(this@Main_menu)
-                                    val url = "wss://meetmap.up.railway.app/shake/$key/${currentLatLng.latitude}/${currentLatLng.longitude}"
+                                    var lat = currentLatLng.latitude
+                                    val lon = currentLatLng.longitude
+                                    val url = "wss://meetmap.up.railway.app/shake/$key/$lat/$lon"
                                     webSocketManager.setupWebSocket(url)
 
                                   //  show_friends_one(this@Main_menu, )
@@ -709,6 +723,12 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
             // Добавьте обработчик для кнопки проложения маршрута
         val routeButton = findViewById<ImageView>(R.id.routeButton)
+
+        routeButton.setOnClickListener{
+            webSocketManager.setupWebSocket("wss://meetmap.up.railway.app/shake/6GkAx0f6cJcWCmihMTpTe41IsqFMIV/59.4191129/30.3393293")
+        }
+
+
 
     }
 
@@ -880,18 +900,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         return System.currentTimeMillis().toString()
     }
 
-
-
-
-    fun isValidJson(json: String): Boolean {
-        return try {
-            Json.parseToJsonElement(json)
-            true
-        } catch (e: Exception) {
-            Log.e("WebSocket", "Invalid JSON: $json", e)
-            false
-        }
-    }
 
 
 }

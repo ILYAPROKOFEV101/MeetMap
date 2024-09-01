@@ -47,7 +47,7 @@ fun show_friends_one(context: Context, data: List<Friends_type>) {
     }
 
     // Dismiss the current dialog if it's already shown
-    currentDialog?.dismiss()
+   // currentDialog?.dismiss()
 
     // Build and show the new dialog
     val alertDialog = AlertDialog.Builder(context, R.style.CustomDialog)
@@ -74,7 +74,7 @@ fun show_friends_one(context: Context, data: List<Friends_type>) {
     alertDialog.window?.attributes = layoutParams
 
     // Save the current dialog reference
-    currentDialog = alertDialog
+    //currentDialog = alertDialog
 
     // Set up the konfetti
     val emitterConfig = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)

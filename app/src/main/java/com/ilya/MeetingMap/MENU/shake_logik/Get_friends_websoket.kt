@@ -10,20 +10,20 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
-import okhttp3.WebSocketListener
+
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import okhttp3.WebSocketListener
 
 import okhttp3.*
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import okhttp3.logging.HttpLoggingInterceptor
 
-class WebSocketManager(
-    private val client: OkHttpClient,
-    private val callback: WebSocketCallback?
-) {
+class WebSocketManager(private val client: OkHttpClient, private val callback: WebSocketCallback? ) : WebSocketListener()
+{
 
     private var webSocket: WebSocket? = null
     private val messages: MutableList<String> = mutableListOf()
@@ -41,9 +41,10 @@ class WebSocketManager(
 
     // Настройка WebSocket
     fun setupWebSocket(url: String) {
-        Log.d("WebSocket", "url = $url")
+        Log.d("WebSocket_shake", "url = $url")
+
         if (!canConnect) {
-            Log.d("WebSocket", "Подключение слишком часто. Подождите 10 секунд.")
+            Log.d("WebSocket_shake", "Подключение слишком часто. Подождите 10 секунд.")
             return
         }
 
@@ -65,55 +66,53 @@ class WebSocketManager(
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     isConnected = true
                     canConnect = false
-                    Log.d("WebSocket", "WebSocket opened with response: $response")
+                    Log.d("WebSocket_shake", "WebSocket opened with response: $response")
+
+                    // Убедитесь, что соединение остается открытым
+                    handler.postDelayed({
+                        closeWebSocket()
+                    }, 10 * 1000)  // Закрыть через 10 секунд
+
                     handler.postDelayed({
                         canConnect = true
-                        Log.d("WebSocket", "Можно повторно подключаться к WebSocket")
+                        Log.d("WebSocket_shake", "Можно повторно подключаться к WebSocket")
                     }, 10 * 1000)  // Установлена задержка на 10 секунд
                 }
 
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                     isConnected = false
-                    Log.d("WebSocket", "WebSocket closed with reason: $reason")
+                    Log.d("WebSocket_shake", "WebSocket closed with reason: $reason")
                 }
 
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                     isConnected = false
-                    Log.e("WebSocket", "WebSocket failure: ${t.message}. Response: $response")
+                    Log.e("WebSocket_shake", "WebSocket failure: ${t.message}. Response: $response")
                 }
-
             })
         } catch (e: Exception) {
-            Log.e("WebSocket", "Error creating WebSocket: ${e.message}")
+            Log.e("WebSocket_shake", "Error creating WebSocket: ${e.message}")
         }
     }
 
-
     // Обработка полученного сообщения
     fun handleReceivedMessage(message: String) {
-
         try {
             val gson = Gson()
-            var receivedDataList: List<WebSocketManager.ReceivedData>
-
-            // Попробуем сначала распарсить как массив
-            try {
-                receivedDataList = gson.fromJson(message, Array<WebSocketManager.ReceivedData>::class.java).toList()
+            val receivedDataList: List<WebSocketManager.ReceivedData> = try {
+                gson.fromJson(message, Array<WebSocketManager.ReceivedData>::class.java).toList()
             } catch (e: JsonSyntaxException) {
-                // Если не удалось, попробуем распарсить как одиночный объект
-                val singleData = gson.fromJson(message, WebSocketManager.ReceivedData::class.java)
-                receivedDataList = listOf(singleData)
+                listOf(gson.fromJson(message, WebSocketManager.ReceivedData::class.java))
             }
 
-            Log.d("WebSocket", "Received data count: ${receivedDataList.size}")
+            Log.d("WebSocket_shake", "Received data count: ${receivedDataList.size}")
+            Log.d("WebSocket_shake", "Received data count: ${receivedDataList}")
 
             // Возвращаем данные через callback
             callback?.onMessageReceived(receivedDataList)
         } catch (e: Exception) {
-            Log.e("WebSocket", "Error parsing JSON: ${e.message}")
+            Log.e("WebSocket_shake", "Error parsing JSON: ${e.message}")
         }
     }
-
 
     // Функция закрытия WebSocket
     fun closeWebSocket() {
@@ -127,3 +126,4 @@ class WebSocketManager(
         val key: String
     )
 }
+
