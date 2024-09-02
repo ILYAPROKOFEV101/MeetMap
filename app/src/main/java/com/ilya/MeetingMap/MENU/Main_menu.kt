@@ -14,6 +14,7 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -352,9 +353,14 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     collectedFriends.clear()  // Очищаем список после отображения
                 }
                 else if (collectedFriends.size == 1) {
-                    currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
-                    show_friends_one(this, collectedFriends)
-                    collectedFriends.clear()  // Очищаем список после отображения
+                    // Если есть один друг, ждем некоторого времени для получения второго
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        if (collectedFriends.size == 1) {
+                            currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
+                            show_friends_one(this, collectedFriends)
+                            collectedFriends.clear()  // Очищаем список после отображения
+                        }
+                    }, 5000) // Ждем 5 секунд для получения второго друга
                 }
 
                 // Показать конфетти
@@ -380,6 +386,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 Toast.makeText(this, "Получены данные: ${firstData.user_name}, ${firstData.img}, ${firstData.key}", Toast.LENGTH_LONG).show()
             }
         }
+
 
 
     fun onFindLocation(lat: Double, lon: Double) {
