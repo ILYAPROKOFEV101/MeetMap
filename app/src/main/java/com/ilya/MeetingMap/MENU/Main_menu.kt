@@ -93,6 +93,8 @@ import nl.dionsegijn.konfetti.xml.KonfettiView
 import okhttp3.OkHttpClient
 import post_user_info
 import sendGetRequest
+import show_friends_fourth
+import show_friends_third
 import show_friends_two
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -283,11 +285,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
 
     private suspend fun handleReceivedMarkers(jsonData: String, uid: String, markerList: MutableList<MarkerData>) {
-        // Проверяем, что jsonData начинается с '['
-        if (!jsonData.trim().startsWith("[")) {
-            Log.e("WebSocket", "Unexpected response format: $jsonData")
-            return
-        }
+
 
         val markers = withContext(Dispatchers.IO) {
             try {
@@ -346,46 +344,73 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 // Добавляем новых друзей в список собранных данных
                 collectedFriends.addAll(newFriends)
 
-                // Если в списке два или больше друга, обновляем диалог
-                if (collectedFriends.size >= 2) {
-                    currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
-                    show_friends_two(this, collectedFriends)
-                    collectedFriends.clear()  // Очищаем список после отображения
-                }
-                else if (collectedFriends.size == 1) {
-                    // Если есть один друг, ждем некоторого времени для получения второго
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        if (collectedFriends.size == 1) {
+                // Ждем 1-2 секунды перед обработкой собранных данных
+                Handler(Looper.getMainLooper()).postDelayed({
+                    // Проверяем, сколько друзей собрано, и показываем соответствующий диалог
+                    when (collectedFriends.size) {
+                        1 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
                             show_friends_one(this, collectedFriends)
-                            collectedFriends.clear()  // Очищаем список после отображения
                         }
-                    }, 5000) // Ждем 5 секунд для получения второго друга
-                }
+                        2 -> {
+                            currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
+                            show_friends_two(this, collectedFriends)
+                        }
+                        3 -> {
+                            currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
+                            show_friends_third(this, collectedFriends)
+                        }
+                        4 -> {
+                            currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
+                            show_friends_fourth(this, collectedFriends)
+                        }
+                        else -> {
+                            // В случае, если друзей больше четырех, показываем диалог с предупреждением или предлагаем выбор
+                            AlertDialog.Builder(this)
+                                .setTitle("Too many friends")
+                                .setMessage("You have more than four friends to display. Please select which ones to view or refine your selection.")
+                                .setPositiveButton("OK") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .setNegativeButton("Cancel") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
 
-                // Показать конфетти
-                val konfettiView = findViewById<KonfettiView>(R.id.konfettiView_map)
-                val emitterConfig = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
-                konfettiView.start(
-                    Party(
-                        speed = 0f,
-                        maxSpeed = 30f,
-                        damping = 0.9f,
-                        spread = 360,
-                        colors = listOf(Color.YELLOW, Color.GREEN, Color.MAGENTA),
-                        position = Position.Relative(0.5, 0.0),
-                        size = listOf(Size.SMALL, Size.LARGE),
-                        timeToLive = 3000L,
-                        shapes = listOf(Shape.Square),
-                        emitter = emitterConfig
+                    }
+
+                    // Очищаем список после отображения
+                    collectedFriends.clear()
+
+                    // Показать конфетти
+                    val konfettiView = findViewById<KonfettiView>(R.id.konfettiView_map)
+                    val emitterConfig = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
+                    konfettiView.start(
+                        Party(
+                            speed = 0f,
+                            maxSpeed = 30f,
+                            damping = 0.9f,
+                            spread = 360,
+                            colors = listOf(Color.YELLOW, Color.GREEN, Color.MAGENTA),
+                            position = Position.Relative(0.5, 0.0),
+                            size = listOf(Size.SMALL, Size.LARGE),
+                            timeToLive = 3000L,
+                            shapes = listOf(Shape.Square),
+                            emitter = emitterConfig
+                        )
                     )
-                )
 
-                // Показываем Toast с информацией о первой записи
-                val firstData = dataList.first()
-                Toast.makeText(this, "Получены данные: ${firstData.user_name}, ${firstData.img}, ${firstData.key}", Toast.LENGTH_LONG).show()
+                    // Показываем Toast с информацией о первой записи
+                    val firstData = collectedFriends.firstOrNull()
+                    firstData?.let {
+                        Toast.makeText(this, "Получены данные: ${it.name}, ${it.img}, ${it.key}", Toast.LENGTH_LONG).show()
+                    }
+                }, 7000) // Ждем 1 секунду перед обработкой
             }
         }
+
+
 
 
 
@@ -653,7 +678,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                         //   mMap.addMarker(MarkerOptions().position(currentLatLng).title("You are here"))
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
 
-
                         lifecycleScope.launch {
                             while (true) {
                                 try {
@@ -678,7 +702,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                             }
 
                         }
-
 
                         // код котрый опредляет тряску телефона
                         shakeDetector = ShakeDetector(this, object : ShakeDetector.OnShakeListener {
@@ -732,7 +755,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val routeButton = findViewById<ImageView>(R.id.routeButton)
 
         routeButton.setOnClickListener{
-            webSocketManager.setupWebSocket("wss://meetmap.up.railway.app/shake/6GkAx0f6cJcWCmihMTpTe41IsqFMIV/59.4191129/30.3393293")
+            webSocketManager.setupWebSocket("wss://meetmap.up.railway.app/shake/q2Bl2KZmXXMuwg4ME2LHG3wKFobKNH/59.4191129/30.3393293")
         }
 
 
