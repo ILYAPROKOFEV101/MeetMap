@@ -406,7 +406,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     firstData?.let {
                         Toast.makeText(this, "Получены данные: ${it.name}, ${it.img}, ${it.key}", Toast.LENGTH_LONG).show()
                     }
-                }, 7000) // Ждем 1 секунду перед обработкой
+                }, 200) // Ждем 1 секунду перед обработкой
             }
         }
 

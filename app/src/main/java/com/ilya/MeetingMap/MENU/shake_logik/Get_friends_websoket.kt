@@ -22,8 +22,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import okhttp3.logging.HttpLoggingInterceptor
 
-class WebSocketManager(private val client: OkHttpClient, private val callback: WebSocketCallback? ) : WebSocketListener()
-{
+class WebSocketManager(private val client: OkHttpClient, private val callback: WebSocketCallback?) : WebSocketListener() {
 
     private var webSocket: WebSocket? = null
     private val messages: MutableList<String> = mutableListOf()
@@ -48,64 +47,57 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
             return
         }
 
-        if (isConnected) {
-            closeWebSocket()
-        }
-
         try {
             val request: Request = Request.Builder()
                 .url(url)
                 .build()
 
-            webSocket = client.newWebSocket(request, object : WebSocketListener() {
-
-                override fun onMessage(webSocket: WebSocket, text: String) {
-                    handleReceivedMessage(text)
-                }
-
-                override fun onOpen(webSocket: WebSocket, response: Response) {
-                    isConnected = true
-                    canConnect = false
-                    Log.d("WebSocket_shake", "WebSocket opened with response: $response")
-
-                    // Убедитесь, что соединение остается открытым
-                    handler.postDelayed({
-                        closeWebSocket()
-                    }, 10 * 1000)  // Закрыть через 10 секунд
-
-                    handler.postDelayed({
-                        canConnect = true
-                        Log.d("WebSocket_shake", "Можно повторно подключаться к WebSocket")
-                    }, 10 * 1000)  // Установлена задержка на 10 секунд
-                }
-
-                override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                    isConnected = false
-                    Log.d("WebSocket_shake", "WebSocket closed with reason: $reason")
-                }
-
-                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                    isConnected = false
-                    Log.e("WebSocket_shake", "WebSocket failure: ${t.message}. Response: $response")
-                }
-            })
+            webSocket = client.newWebSocket(request, this)
         } catch (e: Exception) {
             Log.e("WebSocket_shake", "Error creating WebSocket: ${e.message}")
         }
     }
 
+    // Обработка события открытия сокета
+    override fun onOpen(webSocket: WebSocket, response: Response) {
+        isConnected = true
+        canConnect = false
+        Log.d("WebSocket_shake", "WebSocket opened with response: $response")
+    }
+
+    // Обработка события получения сообщения
+    override fun onMessage(webSocket: WebSocket, text: String) {
+        Log.d("WebSocket_shake", "Raw message received: $text")
+        handleReceivedMessage(text)
+    }
+
+    // Обработка события закрытия сокета
+    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+        isConnected = false
+        Log.d("WebSocket_shake", "WebSocket closed with reason: $reason")
+        reconnectWithDelay()
+
+    }
+
+    // Обработка ошибки подключения
+    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+        isConnected = false
+        Log.e("WebSocket_shake", "WebSocket failure: ${t.message}. Response: $response")
+        reconnectWithDelay()
+    }
+
     // Обработка полученного сообщения
-    fun handleReceivedMessage(message: String) {
+    private fun handleReceivedMessage(message: String) {
         try {
             val gson = Gson()
-            val receivedDataList: List<WebSocketManager.ReceivedData> = try {
-                gson.fromJson(message, Array<WebSocketManager.ReceivedData>::class.java).toList()
+            val receivedDataList: List<ReceivedData> = try {
+                gson.fromJson(message, Array<ReceivedData>::class.java).toList()
             } catch (e: JsonSyntaxException) {
-                listOf(gson.fromJson(message, WebSocketManager.ReceivedData::class.java))
+                listOf(gson.fromJson(message, ReceivedData::class.java))
             }
 
             Log.d("WebSocket_shake", "Received data count: ${receivedDataList.size}")
-            Log.d("WebSocket_shake", "Received data count: ${receivedDataList}")
+            Log.d("WebSocket_shake", "Received data: $receivedDataList")
 
             // Возвращаем данные через callback
             callback?.onMessageReceived(receivedDataList)
@@ -125,5 +117,13 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
         val img: String,
         val key: String
     )
-}
 
+    // Повторное подключение с задержкой
+    private fun reconnectWithDelay() {
+        handler.postDelayed({
+            Log.d("WebSocket_shake", "Attempting to reconnect...")
+            canConnect = true
+            setupWebSocket("ws://yourserver.com") // Здесь укажите нужный URL
+        }, 10000) // Задержка 10 секунд перед повторным подключением
+    }
+}

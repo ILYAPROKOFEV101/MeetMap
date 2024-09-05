@@ -24,22 +24,22 @@ class  WebSocketClient(private val url: String) : WebSocketListener() {
 
     private val listener = object : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            Log.d("WebSocket_shake", "Connected to the server")
+            Log.d("WebSocket", "Connected to the server")
             onConnectionOpened()
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            Log.d("WebSocket_shake", "Received message: $text")
+            Log.d("WebSocket", "Received message: $text")
             handleResponse(text)
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-            Log.d("WebSocket_shake", "Closing: $code / $reason")
+            Log.d("WebSocket", "Closing: $code / $reason")
             onConnectionClosing(code, reason)
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-            Log.e("WebSocket_shake", "Error: ${t.message}", t)
+            Log.e("WebSocket", "Error: ${t.message}", t)
             deferredResponse?.completeExceptionally(t)
             onConnectionFailure(t, response)
             retryConnection()
@@ -54,9 +54,9 @@ class  WebSocketClient(private val url: String) : WebSocketListener() {
     fun sendMessage(message: String) {
         if (::webSocket.isInitialized) {
             webSocket.send(message)
-            Log.d("WebSocket_shake", "Sent: $message")
+            Log.d("WebSocket", "Sent: $message")
         } else {
-            Log.e("WebSocket_shake", "WebSocket is not initialized!")
+            Log.e("WebSocket", "WebSocket is not initialized!")
         }
     }
 
@@ -64,7 +64,7 @@ class  WebSocketClient(private val url: String) : WebSocketListener() {
         if (::webSocket.isInitialized) {
             webSocket.close(1000, "Goodbye!")
         } else {
-            Log.e("WebSocket_shake", "WebSocket is not initialized!")
+            Log.e("WebSocket", "WebSocket is not initialized!")
         }
     }
 
@@ -79,7 +79,7 @@ class  WebSocketClient(private val url: String) : WebSocketListener() {
     }
 
     private fun handleResponse(text: String) {
-        Log.d("WebSocket_shake", "Received message: $text")
+        Log.d("WebSocket", "Received message: $text")
         deferredResponse?.let {
             it.complete(text)
             deferredResponse = null
@@ -87,7 +87,7 @@ class  WebSocketClient(private val url: String) : WebSocketListener() {
     }
 
     private fun retryConnection() {
-        Log.d("WebSocket_shake", "Retrying connection in 2 seconds...")
+        Log.d("WebSocket", "Retrying connection in 2 seconds...")
         Handler(Looper.getMainLooper()).postDelayed({
             start()
         }, 2000)
