@@ -69,13 +69,13 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
     override fun onMessage(webSocket: WebSocket, text: String) {
         Log.d("WebSocket_shake", "Raw message received: $text")
         handleReceivedMessage(text)
+        webSocket.close(1000, "Goodbye!")
     }
 
     // Обработка события закрытия сокета
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         isConnected = false
         Log.d("WebSocket_shake", "WebSocket closed with reason: $reason")
-        reconnectWithDelay()
 
     }
 
@@ -83,7 +83,6 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         isConnected = false
         Log.e("WebSocket_shake", "WebSocket failure: ${t.message}. Response: $response")
-        reconnectWithDelay()
     }
 
     // Обработка полученного сообщения
@@ -109,6 +108,7 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
     // Функция закрытия WebSocket
     fun closeWebSocket() {
         webSocket?.close(1000, "Connection closed by user")
+        webSocket = null
     }
 
     // Модель данных для полученного JSON
@@ -118,12 +118,11 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
         val key: String
     )
 
-    // Повторное подключение с задержкой
-    private fun reconnectWithDelay() {
-        handler.postDelayed({
-            Log.d("WebSocket_shake", "Attempting to reconnect...")
-            canConnect = true
-            setupWebSocket("ws://yourserver.com") // Здесь укажите нужный URL
-        }, 10000) // Задержка 10 секунд перед повторным подключением
+
+
+    // Остановка потока и освобождение ресурсов
+    fun shutdown() {
+        closeWebSocket()
+        handlerThread.quitSafely()
     }
 }

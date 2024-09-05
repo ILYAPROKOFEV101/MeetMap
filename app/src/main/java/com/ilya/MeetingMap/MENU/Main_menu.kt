@@ -382,6 +382,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
                     // Очищаем список после отображения
                     collectedFriends.clear()
+                   // webSocketManager.shutdown()
 
                     // Показать конфетти
                     val konfettiView = findViewById<KonfettiView>(R.id.konfettiView_map)
