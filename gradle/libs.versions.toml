@@ -1,6 +1,7 @@
 [versions]
 agp = "8.3.1"
 coilCompose = "2.4.0"
+compiler = "4.13.2"
 converterGson = "2.9.0"
 glide = "4.15.1"
 konfettiXml = "2.0.2"
@@ -47,6 +48,7 @@ firebaseDatabaseKtx = "21.0.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }

@@ -21,41 +21,34 @@ import okhttp3.*
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import okhttp3.logging.HttpLoggingInterceptor
-
 class WebSocketManager(private val client: OkHttpClient, private val callback: WebSocketCallback?) : WebSocketListener() {
 
     private var webSocket: WebSocket? = null
-    private val messages: MutableList<String> = mutableListOf()
     var isConnected: Boolean = false
         private set
 
-    private val handlerThread: HandlerThread = HandlerThread("WebSocketThread")
-    private lateinit var handler: Handler
-    private var canConnect = true
-
-    init {
-        handlerThread.start()
-        handler = Handler(handlerThread.looper)
-    }
+    private var disconnectHandler: Handler = Handler(Looper.getMainLooper())
+    private var disconnectRunnable: Runnable? = null
 
     // Настройка WebSocket
     fun setupWebSocket(url: String) {
         Log.d("WebSocket_shake", "url = $url")
 
-        if (!canConnect) {
-            Log.d("WebSocket_shake", "Подключение слишком часто. Подождите 10 секунд.")
-            return
+        // Закрываем предыдущий WebSocket, если он уже подключен
+        if (webSocket != null && isConnected) {
+            closeWebSocket()
         }
 
         try {
-            // Закрываем предыдущий WebSocket, если он существует
-            webSocket?.close(1000, "Reconnecting")
-
             val request: Request = Request.Builder()
                 .url(url)
                 .build()
 
             webSocket = client.newWebSocket(request, this)
+
+            // Устанавливаем таймер для автоматического отключения через 20 секунд
+            scheduleDisconnect()
+
         } catch (e: Exception) {
             Log.e("WebSocket_shake", "Error creating WebSocket: ${e.message}")
         }
@@ -64,7 +57,6 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
     // Обработка события открытия сокета
     override fun onOpen(webSocket: WebSocket, response: Response) {
         isConnected = true
-        canConnect = false
         Log.d("WebSocket_shake", "WebSocket opened with response: $response")
     }
 
@@ -72,20 +64,22 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
     override fun onMessage(webSocket: WebSocket, text: String) {
         Log.d("WebSocket_shake", "Raw message received: $text")
         handleReceivedMessage(text)
-        webSocket.close(1000, "Goodbye!")
+
+        // Не закрываем WebSocket сразу, ждем 20 секунд или закрываем вручную
     }
 
     // Обработка события закрытия сокета
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         isConnected = false
         Log.d("WebSocket_shake", "WebSocket closed with reason: $reason")
-
+        cancelDisconnect()  // Отменяем таймер, так как WebSocket уже закрыт
     }
 
     // Обработка ошибки подключения
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         isConnected = false
         Log.e("WebSocket_shake", "WebSocket failure: ${t.message}. Response: $response")
+        cancelDisconnect()  // Отменяем таймер в случае ошибки
     }
 
     // Обработка полученного сообщения
@@ -110,8 +104,29 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
 
     // Функция закрытия WebSocket
     fun closeWebSocket() {
-        webSocket?.close(1000, "Connection closed by user")
+        webSocket?.close(1000, "Closed by user or timeout")
         webSocket = null
+        isConnected = false
+        cancelDisconnect()  // Отменяем таймер
+    }
+
+    // Запуск таймера для автоматического отключения через 20 секунд
+    private fun scheduleDisconnect() {
+        cancelDisconnect()  // Отменяем старый таймер, если он был запущен
+
+        disconnectRunnable = Runnable {
+            Log.d("WebSocket_shake", "Closing WebSocket after 20 seconds")
+            closeWebSocket()  // Автоматическое отключение WebSocket
+        }
+        disconnectHandler.postDelayed(disconnectRunnable!!, 20 * 1000)  // Запуск таймера на 20 секунд
+    }
+
+    // Отмена таймера отключения
+    private fun cancelDisconnect() {
+        disconnectRunnable?.let {
+            disconnectHandler.removeCallbacks(it)
+        }
+        disconnectRunnable = null
     }
 
     // Модель данных для полученного JSON
@@ -120,12 +135,5 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
         val img: String,
         val key: String
     )
-
-
-
-    // Остановка потока и освобождение ресурсов
-    fun shutdown() {
-        closeWebSocket()
-        handlerThread.quitSafely()
-    }
 }
+

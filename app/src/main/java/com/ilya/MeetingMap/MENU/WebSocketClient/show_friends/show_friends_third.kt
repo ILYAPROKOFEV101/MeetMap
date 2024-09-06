@@ -20,7 +20,7 @@ import nl.dionsegijn.konfetti.core.models.Size
 import nl.dionsegijn.konfetti.xml.KonfettiView
 import java.util.concurrent.TimeUnit
 
-fun show_friends_third(context: Context, data: List<Friends_type>) {
+ fun show_friends_third(context: Context, data: List<Friends_type>) {
     // Inflate the custom layout for the dialog
     val dialogView = LayoutInflater.from(context).inflate(R.layout.friends_list_three, null)
     val konfettiView = dialogView.findViewById<KonfettiView>(R.id.konfettiView)
@@ -32,11 +32,11 @@ fun show_friends_third(context: Context, data: List<Friends_type>) {
 
     val name_first = dialogView.findViewById<TextView>(R.id.name_first)
     val name_second = dialogView.findViewById<TextView>(R.id.name_second)
-    val name_third = dialogView.findViewById<TextView>(R.id.name_third)
+    val name_third = dialogView.findViewById<TextView>(R.id.name_three)
 
     val person_add_first = dialogView.findViewById<Button>(R.id.person_add_first)
     val person_add_second = dialogView.findViewById<Button>(R.id.person_add_second)
-    val person_add_third = dialogView.findViewById<Button>(R.id.person_add_third)
+    val person_add_third = dialogView.findViewById<Button>(R.id.person_add_three)
 
     // Set up the button click listeners
     person_add_first.setOnClickListener {
@@ -87,7 +87,7 @@ fun show_friends_third(context: Context, data: List<Friends_type>) {
             name_third.visibility = View.GONE
         }
         3 -> {
-            // If three friends, populate all three sets of views
+            // Если три пользователя, заполняем все три набора данных
             val friend1 = data[0]
             val friend2 = data[1]
             val friend3 = data[2]
@@ -101,9 +101,17 @@ fun show_friends_third(context: Context, data: List<Friends_type>) {
             name_third.text = friend3.name
             Glide.with(context).load(friend3.img).into(icon_third)
 
-            person_add_third.visibility = View.GONE
-            icon_third.visibility = View.GONE
-            name_third.visibility = View.GONE
+            person_add_first.visibility = View.VISIBLE
+            person_add_second.visibility = View.VISIBLE
+            person_add_third.visibility = View.VISIBLE
+
+            icon_first.visibility = View.VISIBLE
+            icon_second.visibility = View.VISIBLE
+            icon_third.visibility = View.VISIBLE
+
+            name_first.visibility = View.VISIBLE
+            name_second.visibility = View.VISIBLE
+            name_third.visibility = View.VISIBLE
         }
         else -> {
             // Handle the case where there are more than three friends, if needed

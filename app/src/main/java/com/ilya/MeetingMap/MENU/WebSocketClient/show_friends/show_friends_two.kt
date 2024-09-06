@@ -20,7 +20,7 @@ import nl.dionsegijn.konfetti.core.models.Size
 import nl.dionsegijn.konfetti.xml.KonfettiView
 import java.util.concurrent.TimeUnit
 
-fun show_friends_two(context: Context, data: List<Friends_type>) {
+ fun show_friends_two(context: Context, data: List<Friends_type>) {
     // Inflate the custom layout for the dialog
     val dialogView = LayoutInflater.from(context).inflate(R.layout.friends_list_two, null)
     val konfettiView = dialogView.findViewById<KonfettiView>(R.id.konfettiView)

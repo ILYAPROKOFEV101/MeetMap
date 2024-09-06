@@ -48,6 +48,10 @@
                 app:shapeAppearanceOverlay="@style/RoundImage"
                 tools:srcCompat="@tools:sample/avatars" />
 
+            <Space
+                android:layout_width="40dp"
+                android:layout_height="match_parent"/>
+
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/icon_second"
@@ -182,6 +186,9 @@
                 app:shapeAppearanceOverlay="@style/RoundImage"
                 tools:srcCompat="@tools:sample/avatars" />
 
+            <Space
+                android:layout_width="40dp"
+                android:layout_height="match_parent"/>
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/icon_fourth"

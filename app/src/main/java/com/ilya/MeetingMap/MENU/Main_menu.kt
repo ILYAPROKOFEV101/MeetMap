@@ -94,6 +94,7 @@ import okhttp3.OkHttpClient
 import post_user_info
 import sendGetRequest
 import show_friends_fourth
+import show_friends_more
 import show_friends_third
 import show_friends_two
 import java.io.IOException
@@ -226,6 +227,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             )
         }
 
+                //WEBSOCKET
             // получаю данные по метка где я участник, по websoket
         lifecycleScope.launch {
             var previousMarkers: List<MarkerData>? = null // Храним предыдущие данные
@@ -348,34 +350,36 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 Handler(Looper.getMainLooper()).postDelayed({
                     // Проверяем, сколько друзей собрано, и показываем соответствующий диалог
                     when (collectedFriends.size) {
-                        1 -> {
+                            1 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
-                            show_friends_one(this, collectedFriends)
+
+                                    show_friends_one(this, collectedFriends)
+
                         }
+
                         2 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
-                            show_friends_two(this, collectedFriends)
+
+                                show_friends_two(this, collectedFriends)
+
                         }
                         3 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
-                            show_friends_third(this, collectedFriends)
+
+                                show_friends_third(this, collectedFriends)
+
+
                         }
                         4 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
-                            show_friends_fourth(this, collectedFriends)
+
+                                show_friends_fourth(this, collectedFriends)
+
+
                         }
-                        else -> {
-                            // В случае, если друзей больше четырех, показываем диалог с предупреждением или предлагаем выбор
-                            AlertDialog.Builder(this)
-                                .setTitle("Too many friends")
-                                .setMessage("You have more than four friends to display. Please select which ones to view or refine your selection.")
-                                .setPositiveButton("OK") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .setNegativeButton("Cancel") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .show()
+                        5 -> {
+                               show_friends_more(this, collectedFriends)
+
                         }
 
                     }
@@ -714,26 +718,22 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                             override fun onShake() {
                                 val currentTime = System.currentTimeMillis()
                                 if (currentTime - lastShakeTime >= shakeInterval) {
-                                    lastShakeTime = currentTime // Обновляем время последнего вызова
+                                    lastShakeTime = currentTime
 
                                     val key = getUserKey(this@Main_menu)
                                     val lat = currentLatLng.latitude
                                     val lon = currentLatLng.longitude
                                     val url = "wss://meetmap.up.railway.app/shake/$key/$lat/$lon"
 
-                                    // Закрываем и открываем новый WebSocket
+                                    // Открываем WebSocket
                                     webSocketManager.setupWebSocket(url)
 
-                                    Toast.makeText(this@Main_menu, "Телефон трясут!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this@Main_menu, "Телефон трясут! Подключение...", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Log.d("ShakeDetector", "Слишком рано для нового вызова.")
                                 }
                             }
                         })
-
-
-
-
 
 
 

@@ -21,7 +21,7 @@ import nl.dionsegijn.konfetti.core.emitter.Emitter
 import nl.dionsegijn.konfetti.xml.KonfettiView
 import java.util.concurrent.TimeUnit
 
-fun show_friends_one(context: Context, data: List<Friends_type>) {
+ fun show_friends_one(context: Context, data: List<Friends_type>) {
     if (data.isEmpty()) return  // Проверка на пустой список
 
     // Inflate the custom layout for the dialog
