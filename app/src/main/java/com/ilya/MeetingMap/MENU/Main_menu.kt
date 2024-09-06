@@ -704,6 +704,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
                         }
 
+
+                            // иотправку данных в WebSocket по таймеру
                         // код котрый опредляет тряску телефона
                         shakeDetector = ShakeDetector(this, object : ShakeDetector.OnShakeListener {
                             private val shakeInterval: Long = 10 * 1000 // 10 секунд
@@ -715,19 +717,25 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                                     lastShakeTime = currentTime // Обновляем время последнего вызова
 
                                     val key = getUserKey(this@Main_menu)
-                                    var lat = currentLatLng.latitude
+                                    val lat = currentLatLng.latitude
                                     val lon = currentLatLng.longitude
                                     val url = "wss://meetmap.up.railway.app/shake/$key/$lat/$lon"
+
+                                    // Закрываем и открываем новый WebSocket
                                     webSocketManager.setupWebSocket(url)
 
-                                  //  show_friends_one(this@Main_menu, )
-                                    // Ваш код, который будет выполняться при тряске
                                     Toast.makeText(this@Main_menu, "Телефон трясут!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Log.d("ShakeDetector", "Слишком рано для нового вызова.")
                                 }
                             }
                         })
+
+
+
+
+
+
 
                         // Отслеживание скорости и расстояния
                         updateSpeed(it.speed)
@@ -856,7 +864,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             e.printStackTrace()
         }
     }
-
 
     fun findLocation_mark(lat: Double, lon: Double) {
         // Создание объекта LatLng с переданными координатами

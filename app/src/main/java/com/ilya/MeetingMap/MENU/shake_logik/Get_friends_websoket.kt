@@ -48,6 +48,9 @@ class WebSocketManager(private val client: OkHttpClient, private val callback: W
         }
 
         try {
+            // Закрываем предыдущий WebSocket, если он существует
+            webSocket?.close(1000, "Reconnecting")
+
             val request: Request = Request.Builder()
                 .url(url)
                 .build()
