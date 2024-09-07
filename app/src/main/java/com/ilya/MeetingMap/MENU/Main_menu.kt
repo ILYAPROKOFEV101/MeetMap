@@ -73,8 +73,10 @@ import com.ilya.codewithfriends.presentation.profile.IMG
 import com.ilya.codewithfriends.presentation.profile.UID
 import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
+import decodePoly
 import generateUID
 import getAddressFromCoordinates
+import getMapRoute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -226,7 +228,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
-
                 //WEBSOCKET
             // получаю данные по метка где я участник, по websoket
         lifecycleScope.launch {
@@ -266,7 +267,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                         } else {
                             Log.d("WebSocket", "Markers unchanged, skipping handleReceivedMarkers")
                         }
-
                         // Обновляем предыдущие данные
                         previousMarkers = currentMarkers
                     } catch (e: Exception) {
@@ -278,13 +278,9 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         }
 
-
-
     }
 
     private var isItemDecorationAdded = false // Флаг
-
-
 
     private suspend fun handleReceivedMarkers(jsonData: String, uid: String, markerList: MutableList<MarkerData>) {
 
@@ -326,7 +322,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         }
     }
-
 
         // Вызов алерт диалог , для тогочтобы показать друга
     // Реализация метода интерфейса WebSocketCallback
@@ -414,10 +409,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 }, 200) // Ждем 1 секунду перед обработкой
             }
         }
-
-
-
-
 
     fun onFindLocation(lat: Double, lon: Double) {
         findLocation_mark(lat, lon) // Вызов функции перемещения камеры
@@ -661,6 +652,27 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         }
 
+        // Пример координат для запроса маршрута
+        val startLat = 59.929122
+        val startLon = 30.295077
+        val endLat = 59.983762
+        val endLon = 30.311365
+
+        // Запрос маршрута и добавление его на карту
+        CoroutineScope(Dispatchers.Main).launch {
+            val routeGeometry = getMapRoute(startLat, startLon, endLat, endLon)
+            routeGeometry?.let {
+                val routePoints = decodePoly(it)
+                addRouteToMap(routePoints)
+
+                // Добавляем маркеры начальной и конечной точек
+                addMarkers(LatLng(startLat, startLon), LatLng(endLat, endLon))
+            }
+            Log.d("MapRoute", "Route geometry: $routeGeometry")
+        }
+
+
+
         // Обработка выбора места из AutoCompleteTextView
         locationAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
             val selectedItem = adapter.getItem(position).toString()
@@ -769,6 +781,28 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
 
 
+
+    }
+
+    // Добавление маркеров на начальную и конечную точки маршрута
+    private fun addMarkers(startPoint: LatLng, endPoint: LatLng) {
+        mMap.addMarker(MarkerOptions().position(startPoint).title("Start Point"))
+        mMap.addMarker(MarkerOptions().position(endPoint).title("End Point"))
+    }
+
+
+    // Добавление маршрута на карту
+    private fun addRouteToMap(routePoints: List<LatLng>) {
+        val polylineOptions = PolylineOptions()
+            .addAll(routePoints)
+            .color(Color.BLUE)
+            .width(10f)
+        mMap.addPolyline(polylineOptions)
+
+        // Перемещаем камеру к начальной точке маршрута
+        if (routePoints.isNotEmpty()) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(routePoints.first(), 12f))
+        }
     }
 
     private fun showMarkerDialog(marker: MapMarker) {

@@ -12,9 +12,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-interface OnMarkerClickListener {
-    fun onFindLocation(lat: Double, lon: Double)
-}
+
 
 // Создаем OkHttpClient один раз в приложении
 val client: OkHttpClient by lazy {
