@@ -9,6 +9,8 @@ import SpaceItemDecoration
 import WebSocketCallback
 import WebSocketManager
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
@@ -47,12 +49,18 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.Dot
+import com.google.android.gms.maps.model.Gap
+import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.RoundCap
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -126,6 +134,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     private val collectedFriends = mutableListOf<Friends_type>()
 
     var currentLatLngGlobal by mutableStateOf<LatLng>(LatLng(0.0, 0.0))
+    var routePoints by mutableStateOf<LatLng>(LatLng(0.0, 0.0))
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = applicationContext,
@@ -412,7 +421,27 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     fun onFindLocation(lat: Double, lon: Double) {
         findLocation_mark(lat, lon) // Вызов функции перемещения камеры
+        routePoints = LatLng(lat, lon)
     }
+
+    private var currentPolyline: Polyline? = null
+
+    fun findLocation_route() {
+        CoroutineScope(Dispatchers.Main).launch {
+            val routeGeometry = getMapRoute(currentLatLngGlobal.latitude, currentLatLngGlobal.longitude, routePoints.latitude, routePoints.longitude)
+            routeGeometry?.let {
+                val routePoints = decodePoly(it)
+
+                // Удаляем предыдущий маршрут, если он существует
+                currentPolyline?.remove()
+
+                // Добавляем новый маршрут
+                currentPolyline = addRouteToMap(routePoints, 5)
+            }
+            Log.d("MapRoute", "Route geometry: $routeGeometry")
+        }
+    }
+
 
     fun showAddMarkerDialog(latLng: LatLng) {
         // Раздуйте макет диалога
@@ -641,18 +670,19 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             val selectedItem = adapter.getItem(position).toString()
             findLocation(selectedItem)
         }
-
+// Где я могу нати положение маркера
         // Обработка нажатия на кнопку "Найти"
         findButton.setOnClickListener {
             val locationText = locationAutoCompleteTextView.text.toString()
             if (locationText.isNotEmpty()) {
                 findLocation(locationText)
+
             } else {
                 Toast.makeText(this, "Please enter a location", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Пример координат для запроса маршрута
+       /* // Пример координат для запроса маршрута
         val startLat = 59.929122
         val startLon = 30.295077
         val endLat = 59.983762
@@ -669,8 +699,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 addMarkers(LatLng(startLat, startLon), LatLng(endLat, endLon))
             }
             Log.d("MapRoute", "Route geometry: $routeGeometry")
-        }
-
+        }*/
 
 
         // Обработка выбора места из AutoCompleteTextView
@@ -775,35 +804,76 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             // Добавьте обработчик для кнопки проложения маршрута
         val routeButton = findViewById<ImageView>(R.id.routeButton)
 
-        routeButton.setOnClickListener{
-            webSocketManager.setupWebSocket("wss://meetmap.up.railway.app/shake/q2Bl2KZmXXMuwg4ME2LHG3wKFobKNH/59.4191129/30.3393293")
+        var isRouteDrawn = false // Флаг для проверки, построен ли маршрут
+
+        routeButton.setOnClickListener {
+            if (isRouteDrawn) {
+                // Если маршрут уже построен, удаляем его
+                currentPolyline?.remove() // Удаление полилинии
+                isRouteDrawn = false // Меняем состояние
+            } else {
+                // Если маршрут не построен, строим его
+                findLocation_route() // Функция для построения маршрута
+                isRouteDrawn = true // Меняем состояние
+            }
         }
 
-
-
-
-    }
-
-    // Добавление маркеров на начальную и конечную точки маршрута
-    private fun addMarkers(startPoint: LatLng, endPoint: LatLng) {
-        mMap.addMarker(MarkerOptions().position(startPoint).title("Start Point"))
-        mMap.addMarker(MarkerOptions().position(endPoint).title("End Point"))
     }
 
 
-    // Добавление маршрута на карту
-    private fun addRouteToMap(routePoints: List<LatLng>) {
+
+
+    private fun addRouteToMap(routePoints: List<LatLng>, circleSpacing: Int): Polyline {
+        // Создаем полилинию для маршрута
         val polylineOptions = PolylineOptions()
-            .addAll(routePoints)
-            .color(Color.BLUE)
-            .width(10f)
-        mMap.addPolyline(polylineOptions)
+            .addAll(routePoints)          // Добавляем все точки маршрута
+            .width(8f)                   // Ширина линии
+            .color(Color.parseColor("#4285F4"))  // Цвет линии (можно использовать HEX цвет)
+            .geodesic(true)               // Сглаживание углов
+            .startCap(RoundCap())         // Закругление начала линии
+            .endCap(RoundCap())           // Закругление конца линии
+            .jointType(JointType.ROUND)   // Закругление соединений между линиями
 
-        // Перемещаем камеру к начальной точке маршрута
-        if (routePoints.isNotEmpty()) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(routePoints.first(), 12f))
+        // Добавляем полилинию на карту
+        val polyline = mMap.addPolyline(polylineOptions)
+
+        // Получаем уменьшенный Bitmap из drawable
+        val customCircleBitmap = getResizedBitmap(R.drawable.custom_circle, 30, 30)  // Уменьшаем до 20x20 пикселей
+
+        // Добавляем кастомные кружки с регулируемым расстоянием
+        for (i in routePoints.indices step circleSpacing) {
+            val point = routePoints[i]
+            mMap.addMarker(
+                MarkerOptions()
+                    .position(point)
+                    .icon(customCircleBitmap)  // Используем уменьшенное изображение кружка
+                    .anchor(0.5f, 0.5f)  // Центр маркера совпадает с точкой маршрута
+            )
         }
+
+        return polyline
     }
+
+    // Функция для изменения размера Bitmap
+    private fun getResizedBitmap(drawableId: Int, width: Int, height: Int): BitmapDescriptor {
+        val drawable = ContextCompat.getDrawable(this, drawableId)
+        val bitmap = Bitmap.createBitmap(
+            drawable!!.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+
+        // Создаем уменьшенный bitmap
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false)
+        return BitmapDescriptorFactory.fromBitmap(resizedBitmap)
+    }
+
+
+
+
 
     private fun showMarkerDialog(marker: MapMarker) {
 
@@ -890,6 +960,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
                 // Перемещение камеры к метке
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+
+                routePoints = LatLng(location.latitude, location.longitude)
             } else {
                 // Обработка случая, когда результаты геокодирования пусты
                 Toast.makeText(this, "Location not found", Toast.LENGTH_SHORT).show()

@@ -40,6 +40,7 @@ class MarkerAdapter(
             endData.text = "${marker.endDate} Time:${marker.endTime}"
             find_marker_button.setOnClickListener {
                 onMarkerClickListener.onFindLocation(marker.lat, marker.lon)
+               // onMarkerClickListener.findLocation_route(marker.lat, marker.lon)
             }
             delte_marker_button.setOnClickListener {
                 CoroutineScope(Dispatchers.Main).launch {
