@@ -14,6 +14,7 @@ import nl.dionsegijn.konfetti.core.models.Size
 import com.ilya.MeetingMap.R
 import com.bumptech.glide.Glide
 import com.ilya.MeetingMap.MENU.WebSocketClient.Friends_type
+import com.ilya.MeetingMap.Mine_menu.Main_menu
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit
 
  fun show_friends_one(context: Context, data: List<Friends_type>) {
     if (data.isEmpty()) return  // Проверка на пустой список
+     val addmetod = Main_menu()
 
     // Inflate the custom layout for the dialog
     val dialogView = LayoutInflater.from(context).inflate(R.layout.friends_list, null)
@@ -41,10 +43,7 @@ import java.util.concurrent.TimeUnit
         .load(data[0].img)
         .into(icon)
 
-    // Set up the button click listener
-    buttonAddFriends.setOnClickListener {
-        // Handle the add friend action
-    }
+
 
     // Dismiss the current dialog if it's already shown
    // currentDialog?.dismiss()

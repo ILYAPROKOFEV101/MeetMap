@@ -7,10 +7,12 @@ import android.widget.ListView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ilya.MeetingMap.MENU.WebSocketClient.Friends_type
+import com.ilya.MeetingMap.Mine_menu.Main_menu
 import com.ilya.MeetingMap.R
 
 fun show_friends_more(context: Context, data: List<Friends_type>) {
     // Преобразуем данные в список строк
+
     Log.d("show_friends_more", "Received data: $data")
     val names = data.map { it.name }
 

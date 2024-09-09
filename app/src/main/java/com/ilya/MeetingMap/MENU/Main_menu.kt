@@ -103,6 +103,7 @@ import nl.dionsegijn.konfetti.xml.KonfettiView
 import okhttp3.OkHttpClient
 import post_user_info
 import sendGetRequest
+import showAddMarkerDialog
 import show_friends_fourth
 import show_friends_more
 import show_friends_third
@@ -289,10 +290,10 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
     }
 
+
     private var isItemDecorationAdded = false // Флаг
 
     private suspend fun handleReceivedMarkers(jsonData: String, uid: String, markerList: MutableList<MarkerData>) {
-
 
         val markers = withContext(Dispatchers.IO) {
             try {
@@ -334,7 +335,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
         // Вызов алерт диалог , для тогочтобы показать друга
     // Реализация метода интерфейса WebSocketCallback
-        override fun onMessageReceived(dataList: List<WebSocketManager.ReceivedData>) {
+    override fun onMessageReceived(dataList: List<WebSocketManager.ReceivedData>) {
             runOnUiThread {
                 if (dataList.isEmpty()) return@runOnUiThread
 
@@ -442,180 +443,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         }
     }
 
-
-    fun showAddMarkerDialog(latLng: LatLng) {
-        // Раздуйте макет диалога
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_marker, null)
-        var access = false // Переменная для хранения состояния Switch
-        // Найдите элементы внутри макета диалога
-        val selectDateButton_start = dialogView.findViewById<Button>(R.id.selectDateButtonstart)
-        val selectDateButton_end = dialogView.findViewById<Button>(R.id.selectDateButtonend)
-        val selectTimeButtonstart = dialogView.findViewById<Button>(R.id.selectTimeButton_start)
-        val selectTimeButtonend = dialogView.findViewById<Button>(R.id.selectTimeButton_end)
-        val editName = dialogView.findViewById<EditText>(R.id.editname)
-        val editobout = dialogView.findViewById<EditText>(R.id.editobout)
-        val seekBar = dialogView.findViewById<SeekBar>(R.id.seekBar)
-        val textView = dialogView.findViewById<TextView>(R.id.textView)
-        val publicSwitch = dialogView.findViewById<Switch>(R.id.switch2) // Найдите ваш Switch
-        var selectedDate_start: String? = null
-        var selectedDate_end: String? = null
-        var selectedTime: Pair<Int, Int>? = null
-         var startTime: String? = null
-         var endTime: String? = null
-         publicSwitch.text = if (!access) "Публичная метка" else "Приватная метка"
-        publicSwitch.setOnCheckedChangeListener { _, isChecked ->
-            access = isChecked
-            publicSwitch.text = if (!access) "Публичная метка" else "Приватная метка"
-        }
-        // Listener для отслеживания изменений SeekBar
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                // Прогресс от 0 до 99, добавляем 1 для диапазона от 1 до 100
-                textView.text = "мест в группе: ${progress + 1}"
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-                // Действия при начале изменения значения SeekBar
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-                // Действия при остановке изменения значения SeekBar
-            }
-        })
-         selectDateButton_start.setOnClickListener {
-             val datePicker = MaterialDatePicker.Builder.datePicker()
-                 .build()
-
-             datePicker.show(supportFragmentManager, "DATE_PICKER")
-
-             datePicker.addOnPositiveButtonClickListener {
-                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                 selectedDate_start = dateFormat.format(Date(it))
-                 selectDateButton_start.text = selectedDate_start
-             }
-         }
-         selectDateButton_end.setOnClickListener {
-             val datePicker = MaterialDatePicker.Builder.datePicker()
-                 .setTitleText("Выберите дату")
-                 .build()
-
-             datePicker.show(supportFragmentManager, "DATE_PICKER")
-
-             datePicker.addOnPositiveButtonClickListener {
-                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                 selectedDate_end = dateFormat.format(Date(it))
-                 selectDateButton_end.text = selectedDate_end
-             }
-         }
-         selectTimeButtonstart.setOnClickListener {
-             val is24HourFormat = true
-             val timeFormat = if (is24HourFormat) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
-
-             val timePicker = MaterialTimePicker.Builder()
-                 .setTimeFormat(timeFormat)
-                 .setTitleText("Выберите время")
-                 .build()
-
-             timePicker.show(supportFragmentManager, "TIME_PICKER")
-
-             timePicker.addOnPositiveButtonClickListener {
-                 val hour = timePicker.hour
-                 val minute = timePicker.minute
-                 val formattedTime = String.format("%02d:%02d", hour, minute)
-                 selectedTime = Pair(hour, minute)
-                 selectTimeButtonstart.text = formattedTime
-                 startTime = formattedTime // Сохраняем выбранное время в переменной
-             }
-         }
-         selectTimeButtonend.setOnClickListener {
-             val is24HourFormat = true
-             val timeFormat = if (is24HourFormat) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
-
-             val timePicker = MaterialTimePicker.Builder()
-                 .setTimeFormat(timeFormat)
-                 .setTitleText("Выберите время")
-                 .build()
-
-             timePicker.show(supportFragmentManager, "TIME_PICKER")
-
-             timePicker.addOnPositiveButtonClickListener {
-                 val hour = timePicker.hour
-                 val minute = timePicker.minute
-                 val formattedTime = String.format("%02d:%02d", hour, minute)
-                 selectedTime = Pair(hour, minute)
-                 selectTimeButtonend.text = formattedTime
-                 endTime = formattedTime // Сохраняем выбранное время в переменной
-             }
-         }
-
-
-         // Создаем диалоговое окно с инфлейтированным макетом
-         val builder = AlertDialog.Builder(this)
-         builder.setView(dialogView)
-             .setPositiveButton("Да") { dialog, _ ->
-                 // Получаем текст из EditText
-                 val editText = dialogView.findViewById<EditText>(R.id.editname)
-                 val markerDescription = editobout.text.toString() // Получаем текст из поля editAbout
-                 val markerTitle = editText.text.toString()
-
-                 if (markerTitle.isNotEmpty()) {
-                     val participants = seekBar.progress + 1
-
-                     // Запуск корутины для получения улицы
-                     CoroutineScope(Dispatchers.IO).launch {
-                         val street = getAddressFromCoordinates(latLng.latitude, latLng.longitude) ?: "Unknown Street"
-
-                         // Теперь создаем MarkerData после получения улицы
-                         val markerData = MarkerData(
-                             key = getUserKey(this@Main_menu).toString(),
-                             username = "Ilya",
-                             imguser = "Photo",
-                             photomark = "photo",
-                             street = street,
-                             id = generateUID(),
-                             lat = latLng.latitude,
-                             lon = latLng.longitude,
-                             name = markerTitle,
-                             whatHappens = markerDescription,
-                             startDate = selectedDate_start?.let { LocalDate.parse(it) }.toString(),
-                             endDate = selectedDate_end?.let { LocalDate.parse(it) }.toString(),
-                             startTime = startTime.toString(),
-                             endTime = endTime.toString(),
-                             participants = participants,
-                             access = access
-                         )
-
-                         // Запуск на главном потоке для обновления UI
-                         withContext(Dispatchers.Main) {
-                             addMarker(latLng, markerTitle)
-
-                             val gson = Gson()
-                             val markerDataJson = gson.toJson(markerData)
-                             Log.d("PushDataJoin", "MarkerData JSON: $markerDataJson")
-
-                             // Запуск корутины для отправки данных на сервер
-                             CoroutineScope(Dispatchers.IO).launch {
-                                 postInvite(getUserKey(this@Main_menu).toString(), uid_main, markerData)
-                             }
-
-                             Log.d("Markersonmap", markers.toString())
-                         }
-                     }
-                 } else {
-                     Toast.makeText(this, "Название метки не может быть пустым", Toast.LENGTH_SHORT).show()
-                 }
-                 dialog.dismiss()
-             }
-             .setNegativeButton("Отмена") { dialog, _ ->
-                 dialog.dismiss()
-             }
-
-         val dialog = builder.create()
-         dialog.window?.setBackgroundDrawableResource(R.drawable.rounded_background)
-         dialog.show()
-
-    }
-
     private fun initializeMap() {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -682,25 +509,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             }
         }
 
-       /* // Пример координат для запроса маршрута
-        val startLat = 59.929122
-        val startLon = 30.295077
-        val endLat = 59.983762
-        val endLon = 30.311365
-
-        // Запрос маршрута и добавление его на карту
-        CoroutineScope(Dispatchers.Main).launch {
-            val routeGeometry = getMapRoute(startLat, startLon, endLat, endLon)
-            routeGeometry?.let {
-                val routePoints = decodePoly(it)
-                addRouteToMap(routePoints)
-
-                // Добавляем маркеры начальной и конечной точек
-                addMarkers(LatLng(startLat, startLon), LatLng(endLat, endLon))
-            }
-            Log.d("MapRoute", "Route geometry: $routeGeometry")
-        }*/
-
 
         // Обработка выбора места из AutoCompleteTextView
         locationAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
@@ -743,7 +551,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
                                 } catch (e: Exception) {
                                     // Обработка ошибки
-                                    Log.e("MarkerData", "Error fetching markers", e)
+                                 //   Log.e("MarkerData", "Error fetching markers", e)
                                 }
                             }
 
@@ -810,6 +618,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
             if (isRouteDrawn) {
                 // Если маршрут уже построен, удаляем его
                 currentPolyline?.remove() // Удаление полилинии
+                removeMarkers()
                 isRouteDrawn = false // Меняем состояние
             } else {
                 // Если маршрут не построен, строим его
@@ -821,37 +630,55 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     }
 
 
-
+    private val markerList = mutableListOf<Marker>()  // Список для сохранения маркеров
 
     private fun addRouteToMap(routePoints: List<LatLng>, circleSpacing: Int): Polyline {
+        // Удаляем предыдущую полилинию, если она существует
+        currentPolyline?.remove()
+
+        // Удаляем все маркеры с карты
+        removeMarkers()
+
         // Создаем полилинию для маршрута
         val polylineOptions = PolylineOptions()
-            .addAll(routePoints)          // Добавляем все точки маршрута
-            .width(8f)                   // Ширина линии
-            .color(Color.parseColor("#4285F4"))  // Цвет линии (можно использовать HEX цвет)
+            .addAll(routePoints)
+            .width(12f)
+            .color(Color.parseColor("#4285F4"))  // Основной цвет линии
             .geodesic(true)               // Сглаживание углов
             .startCap(RoundCap())         // Закругление начала линии
             .endCap(RoundCap())           // Закругление конца линии
             .jointType(JointType.ROUND)   // Закругление соединений между линиями
 
-        // Добавляем полилинию на карту
-        val polyline = mMap.addPolyline(polylineOptions)
+        // Добавляем полилинию на карту и сохраняем её в currentPolyline
+        currentPolyline = mMap.addPolyline(polylineOptions)
 
-        // Получаем уменьшенный Bitmap из drawable
-        val customCircleBitmap = getResizedBitmap(R.drawable.custom_circle, 30, 30)  // Уменьшаем до 20x20 пикселей
+        // Получаем уменьшенный Bitmap для кружков
+        val customCircleBitmap = getResizedBitmap(R.drawable.custom_circle, 20, 20)  // Уменьшаем до 20x20 пикселей
 
         // Добавляем кастомные кружки с регулируемым расстоянием
         for (i in routePoints.indices step circleSpacing) {
             val point = routePoints[i]
-            mMap.addMarker(
+            val marker = mMap.addMarker(
                 MarkerOptions()
                     .position(point)
                     .icon(customCircleBitmap)  // Используем уменьшенное изображение кружка
                     .anchor(0.5f, 0.5f)  // Центр маркера совпадает с точкой маршрута
             )
+            // Добавляем маркер в список для дальнейшего удаления
+            markerList.add(marker!!)
         }
 
-        return polyline
+        // Возвращаем новую полилинию
+        return currentPolyline!!
+    }
+
+    // Удаление всех маркеров с карты
+    private fun removeMarkers() {
+        for (marker in markerList) {
+            marker.remove()
+        }
+        // Очищаем список маркеров
+        markerList.clear()
     }
 
     // Функция для изменения размера Bitmap
@@ -870,10 +697,6 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false)
         return BitmapDescriptorFactory.fromBitmap(resizedBitmap)
     }
-
-
-
-
 
     private fun showMarkerDialog(marker: MapMarker) {
 
@@ -920,30 +743,40 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
     }
 
     override fun onMapClick(latLng: LatLng) {
-        showAddMarkerDialog(latLng)
+        showAddMarkerDialog(latLng, this, uid_main, this)
     }
 
-    private fun addMarker(latLng: LatLng, markerName: String): Marker? {
-        // Добавьте новую метку
-        val marker = mMap?.addMarker(
-            MarkerOptions()
-                .position(latLng)
-                .title(markerName)
-                .icon(
-                    bitmapDescriptorFromVector(
-                        this@Main_menu, // Контекст (возможно, вам понадобится другой)
-                        R.drawable.location_on_, // Ресурс маркера
-                        "FF005B", // Цвет маркера в шестнадцатеричном формате
-                        140, // Ширина маркера
-                        140  // Высота маркера
-                    )
-                )
-        )
-        // Сохраните метку в переменную destinationMarker, если нужно
-        destinationMarker = marker
+    fun set_addMarker(latLng: LatLng, markerName: String){
+        addMarker(latLng, markerName)
+    }
 
-        // Возвращаем созданную метку
-        return marker
+   private fun addMarker(latLng: LatLng, markerName: String): Marker? {
+        // Проверьте, инициализирована ли карта
+        if (::mMap.isInitialized) {
+            // Добавьте новую метку
+            val marker = mMap.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(markerName)
+                    .icon(
+                        bitmapDescriptorFromVector(
+                            this@Main_menu, // Контекст (возможно, вам понадобится другой)
+                            R.drawable.location_on_, // Ресурс маркера
+                            "FF005B", // Цвет маркера в шестнадцатеричном формате
+                            140, // Ширина маркера
+                            140  // Высота маркера
+                        )
+                    )
+            )
+            // Сохраните метку в переменную destinationMarker, если нужно
+            destinationMarker = marker
+
+            // Возвращаем созданную метку
+            return marker
+        } else {
+            Log.e("MapError", "mMap не инициализирован")
+            return null
+        }
     }
 
     // Добавьте метод для поиска местоположения по адресу
