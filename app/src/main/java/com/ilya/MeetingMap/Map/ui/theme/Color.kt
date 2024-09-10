@@ -1,4 +1,4 @@
-package com.ilya.MeetingMap.MENU.ui.theme
+package com.ilya.MeetingMap.Map.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

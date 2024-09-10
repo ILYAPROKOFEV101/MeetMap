@@ -1,20 +1,16 @@
-package com.ilya.MeetingMap.MENU.WebSocketClient
+package com.ilya.MeetingMap.Map.WebSocketClient
 
-import MarkerData
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okio.ByteString
 
 
 class  WebSocketClient(private val url: String) : WebSocketListener() {

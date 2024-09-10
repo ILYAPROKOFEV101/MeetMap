@@ -1,13 +1,11 @@
-package com.ilya.MeetingMap.MENU.Server_API
+package com.ilya.MeetingMap.Map.Server_API
 
 
 import MapMarker
 
-import android.util.Log
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET

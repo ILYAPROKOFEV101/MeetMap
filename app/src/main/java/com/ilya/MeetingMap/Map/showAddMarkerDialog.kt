@@ -9,14 +9,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.gson.Gson
-import com.ilya.MeetingMap.MENU.Server_API.postInvite
-import com.ilya.MeetingMap.Mine_menu.Main_menu
+import com.ilya.MeetingMap.Map.Server_API.postInvite
+import com.ilya.MeetingMap.Mine_menu.Map_Activity
 import com.ilya.MeetingMap.R
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +36,7 @@ fun showAddMarkerDialog(
     activity: FragmentActivity // добавлен параметр
 ) {
 
-    val addmarker = Main_menu()
+    val addmarker = Map_Activity()
 
     // Раздуйте макет диалога
     val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_marker, null)

@@ -27,7 +27,7 @@
             android:value="AIzaSyDaF5wvZj3dJFSYTZRx3XH9O_Oz8XsNETs"/>
         <activity
             android:supportsRtl="true"
-            android:name=".Mine_menu.Main_menu"
+            android:name=".Mine_menu.Map_Activity"
             android:theme="@style/AppTheme"
             android:exported="false"
             android:label="@string/title_activity_main_menu" />

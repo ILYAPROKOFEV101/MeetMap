@@ -115,7 +115,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.ilya.MeetingMap.Mine_menu.Main_menu
+import com.ilya.MeetingMap.Mine_menu.Map_Activity
 import com.ilya.reaction.logik.PreferenceHelper.removeUserKey
 
 
@@ -372,7 +372,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun toshear(userData: UserData?) {
         if (userData?.username != null) {
-            val intent = Intent(this@MainActivity, Main_menu::class.java)
+            val intent = Intent(this@MainActivity, Map_Activity::class.java)
             startActivity(intent)
         }
     }
@@ -394,7 +394,7 @@ class MainActivity : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(Color(0xFF4CAF50)),
                 shape = RoundedCornerShape(20.dp),
                 onClick = {
-                    val intent = Intent(this@MainActivity, Main_menu::class.java)
+                    val intent = Intent(this@MainActivity, Map_Activity::class.java)
                     startActivity(intent)
                     finish()
                 }
@@ -619,7 +619,7 @@ class MainActivity : ComponentActivity() {
                 if(username.isNotBlank() && password.isNotBlank()) {
                     registerUser(this,auth, username, password) { success ->
                         if (success) {
-                            val intent = Intent(this@MainActivity,  Main_menu::class.java)
+                            val intent = Intent(this@MainActivity,  Map_Activity::class.java)
                             startActivity(intent)
                         } else {
                             // Регистрация не удалась

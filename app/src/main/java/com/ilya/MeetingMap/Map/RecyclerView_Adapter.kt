@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.ilya.MeetingMap.MENU.Server_API.deleteParticipantMarker
+import com.ilya.MeetingMap.Map.Server_API.deleteParticipantMarker
 
-import com.ilya.MeetingMap.Mine_menu.Main_menu
+import com.ilya.MeetingMap.Mine_menu.Map_Activity
 import com.ilya.MeetingMap.R
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class MarkerAdapter(
     private val markerList: MutableList<MarkerData>, // Изменяемый список
-    private val onMarkerClickListener: Main_menu, // Интерфейс в конструкторе
+    private val onMarkerClickListener: Map_Activity, // Интерфейс в конструкторе
     private val uid: String
 ) : RecyclerView.Adapter<MarkerAdapter.MarkerViewHolder>() {
 

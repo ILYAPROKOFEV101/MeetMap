@@ -1,4 +1,4 @@
-package com.ilya.MeetingMap.MENU.WebSocketClient
+package com.ilya.MeetingMap.Map.WebSocketClient
 
 import MarkerData
 import android.util.Log

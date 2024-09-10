@@ -1,17 +1,10 @@
-package com.ilya.MeetingMap.MENU.Server_API
+package com.ilya.MeetingMap.Map.Server_API
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.Path
-
 
 
 // Создаем OkHttpClient один раз в приложении

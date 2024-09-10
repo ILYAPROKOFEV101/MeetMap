@@ -1,4 +1,4 @@
-package com.ilya.MeetingMap.MENU.Server_API
+package com.ilya.MeetingMap.Map.Server_API
 
 import MarkerData
 import android.util.Log

@@ -1,7 +1,7 @@
 package com.ilya.MeetingMap.Mine_menu
 
 
-import com.ilya.MeetingMap.MENU.Server_API.Became_Participant_fun
+import com.ilya.MeetingMap.Map.Server_API.Became_Participant_fun
 import MapMarker
 import MarkerAdapter
 import MarkerData
@@ -23,10 +23,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
-import android.widget.SeekBar
-import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -51,8 +48,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.Dot
-import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -62,17 +57,12 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.RoundCap
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
-import com.google.gson.Gson
-import com.ilya.MeetingMap.MENU.Server_API.getMarker
+import com.ilya.MeetingMap.Map.Server_API.getMarker
 
-import com.ilya.MeetingMap.MENU.Server_API.postInvite
-import com.ilya.MeetingMap.MENU.WebSocketClient.Friends_type
-import com.ilya.MeetingMap.MENU.WebSocketClient.WebSocketClient
-import com.ilya.MeetingMap.MENU.WebSocketClient.show_friends.show_friends_one
-import com.ilya.MeetingMap.MENU.shake_logik.ShakeDetector
+import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
+import com.ilya.MeetingMap.Map.WebSocketClient.WebSocketClient
+import com.ilya.MeetingMap.Map.WebSocketClient.show_friends.show_friends_one
+import com.ilya.MeetingMap.Map.shake_logik.ShakeDetector
 
 
 import com.ilya.MeetingMap.R
@@ -82,15 +72,11 @@ import com.ilya.codewithfriends.presentation.profile.UID
 import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 import decodePoly
-import generateUID
-import getAddressFromCoordinates
 import getMapRoute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import markerDataToMapMarker
@@ -109,15 +95,11 @@ import show_friends_more
 import show_friends_third
 import show_friends_two
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.util.Date
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 
 @OptIn(ExperimentalPermissionsApi::class)
-class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener, GoogleMap.OnMapClickListener, WebSocketCallback {
+class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener, GoogleMap.OnMapClickListener, WebSocketCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -175,11 +157,11 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
 
         // Запуск корутины в соответствующем месте
         CoroutineScope(Dispatchers.IO).launch {
-            if(getUserKey(this@Main_menu) == "")
+            if(getUserKey(this@Map_Activity) == "")
             {
-                sendGetRequest("$uid", client, this@Main_menu)
+                sendGetRequest("$uid", client, this@Map_Activity)
             }
-            getUserKey(this@Main_menu)?.let { post_user_info(it, uid.toString(), name.toString(), img.toString()) }
+            getUserKey(this@Map_Activity)?.let { post_user_info(it, uid.toString(), name.toString(), img.toString()) }
             }
 
         val bottomSheet: View = findViewById(R.id.bottomSheet)
@@ -247,7 +229,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 while (true) {
                     try {
                         // Ждем завершения асинхронного запроса
-                        val response = webSocketClient.sendCommandAndGetResponse("get_participant_mark $uid_main ${getUserKey(this@Main_menu)}").await()
+                        val response = webSocketClient.sendCommandAndGetResponse("get_participant_mark $uid_main ${getUserKey(this@Map_Activity)}").await()
                         Log.d("WebSocket i got", " $response")
 
                         // Декодируем текущие данные из ответа
@@ -312,7 +294,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 Log.d("WebSocket", "Markers updated: $markerList")
 
                 val recyclerView: RecyclerView = findViewById(R.id.markerRecyclerView)
-                recyclerView.layoutManager = LinearLayoutManager(this@Main_menu)
+                recyclerView.layoutManager = LinearLayoutManager(this@Map_Activity)
 
                 // Добавляем ItemDecoration только один раз
                 if (!isItemDecorationAdded) {
@@ -325,7 +307,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                 if (adapter is MarkerAdapter) {
                     adapter.notifyDataSetChanged()
                 } else {
-                    recyclerView.adapter = MarkerAdapter(markerList, this@Main_menu, uid)
+                    recyclerView.adapter = MarkerAdapter(markerList, this@Map_Activity, uid)
                 }
             } else {
                 Log.d("WebSocket", "No new markers or markers are the same")
@@ -348,6 +330,8 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     )
                 }
 
+                Log.d("DATAIMHAVE","$newFriends")
+
                 // Добавляем новых друзей в список собранных данных
                 collectedFriends.addAll(newFriends)
 
@@ -358,32 +342,32 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                             1 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
 
-                                    show_friends_one(this, collectedFriends)
+                                    show_friends_one(uid_main, getUserKey(this).toString(), this, newFriends)
 
                         }
 
                         2 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
 
-                                show_friends_two(this, collectedFriends)
+                                show_friends_two(uid_main, getUserKey(this).toString(),this, newFriends)
 
                         }
                         3 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
 
-                                show_friends_third(this, collectedFriends)
+                                show_friends_third(uid_main, getUserKey(this).toString(),this, newFriends)
 
 
                         }
                         4 -> {
                             currentDialog?.dismiss()  // Закрываем текущий диалог, если он есть
 
-                                show_friends_fourth(this, collectedFriends)
+                                show_friends_fourth(uid_main, getUserKey(this).toString(),this, newFriends)
 
 
                         }
                         5 -> {
-                               show_friends_more(this, collectedFriends)
+                               show_friends_more(uid_main, getUserKey(this).toString(),this, newFriends)
 
                         }
 
@@ -569,7 +553,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                                 if (currentTime - lastShakeTime >= shakeInterval) {
                                     lastShakeTime = currentTime
 
-                                    val key = getUserKey(this@Main_menu)
+                                    val key = getUserKey(this@Map_Activity)
                                     val lat = currentLatLng.latitude
                                     val lon = currentLatLng.longitude
                                     val url = "wss://meetmap.up.railway.app/shake/$key/$lat/$lon"
@@ -577,7 +561,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                                     // Открываем WebSocket
                                     webSocketManager.setupWebSocket(url)
 
-                                    Toast.makeText(this@Main_menu, "Телефон трясут! Подключение...", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this@Map_Activity, "Телефон трясут! Подключение...", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Log.d("ShakeDetector", "Слишком рано для нового вызова.")
                                 }
@@ -710,7 +694,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
         val marker_button_not = dialogView.findViewById<Button>(R.id.marker_button_not)
         val marker_button_ready = dialogView.findViewById<Button>(R.id.marker_button_ready)
 
-        val key = getUserKey(this@Main_menu)
+        val key = getUserKey(this@Map_Activity)
 
         // Установка данных маркера в элементы диалога
         marker_name.text = marker.name
@@ -760,7 +744,7 @@ class Main_menu : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineC
                     .title(markerName)
                     .icon(
                         bitmapDescriptorFromVector(
-                            this@Main_menu, // Контекст (возможно, вам понадобится другой)
+                            this@Map_Activity, // Контекст (возможно, вам понадобится другой)
                             R.drawable.location_on_, // Ресурс маркера
                             "FF005B", // Цвет маркера в шестнадцатеричном формате
                             140, // Ширина маркера
