@@ -10,8 +10,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.ilya.MeetingMap.Map.Server_API.addFriends
 import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
 import com.ilya.MeetingMap.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
@@ -43,15 +47,40 @@ import java.util.concurrent.TimeUnit
 
     // Set up the button click listeners
     person_add_first.setOnClickListener {
-        // Handle the add friend action for the first person
+        if (data.isNotEmpty() && uid != null && key != null) {
+            CoroutineScope(Dispatchers.IO).launch{
+                addFriends(uid, key, data[0].key)
+            }
+        } else {
+            Toast.makeText(context, "Error: No data or invalid data", Toast.LENGTH_SHORT).show()
+        }
     }
     person_add_second.setOnClickListener {
-        // Handle the add friend action for the second person
+        if (data.isNotEmpty() && uid != null && key != null) {
+            CoroutineScope(Dispatchers.IO).launch{
+                addFriends(uid, key, data[1].key)
+            }
+        } else {
+            Toast.makeText(context, "Error: No data or invalid data", Toast.LENGTH_SHORT).show()
+        }
     }
     person_add_third.setOnClickListener {
-        // Handle the add friend action for the third person
+        if (data.isNotEmpty() && uid != null && key != null) {
+            CoroutineScope(Dispatchers.IO).launch{
+                addFriends(uid, key, data[2].key)
+            }
+        } else {
+            Toast.makeText(context, "Error: No data or invalid data", Toast.LENGTH_SHORT).show()
+        }
     }
     person_add_fourth.setOnClickListener{
+        if (data.isNotEmpty() && uid != null && key != null) {
+            CoroutineScope(Dispatchers.IO).launch{
+                addFriends(uid, key, data[3].key)
+            }
+        } else {
+            Toast.makeText(context, "Error: No data or invalid data", Toast.LENGTH_SHORT).show()
+        }
 
     }
 

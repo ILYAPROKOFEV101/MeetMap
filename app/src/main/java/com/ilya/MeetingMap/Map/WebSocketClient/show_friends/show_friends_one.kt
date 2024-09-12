@@ -48,10 +48,14 @@ import java.util.concurrent.TimeUnit
         .load(data[0].img)
         .into(icon)
 
+
+      // i added CoroutineScope flow on IO
      buttonAddFriends.setOnClickListener {
          // Проверяем, что список data не пустой
          if (data.isNotEmpty() && uid != null && key != null) {
-             addFriends(uid, key, data[0].key)
+             CoroutineScope(Dispatchers.IO).launch{
+                 addFriends(uid, key, data[0].key)
+             }
          } else {
              Toast.makeText(context, "Error: No data or invalid data", Toast.LENGTH_SHORT).show()
          }

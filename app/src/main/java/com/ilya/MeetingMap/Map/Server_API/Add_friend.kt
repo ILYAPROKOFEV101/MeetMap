@@ -18,7 +18,7 @@ interface AddFriendsService {
     ): Call<Void> // Возвращаем Call<Void>
 }
 
-fun addFriends(uid: String, key: String, friendKey: String) {
+suspend fun addFriends(uid: String, key: String, friendKey: String) {
     val retrofit = Retrofit.Builder()
         .baseUrl("https://meetmap.up.railway.app/")
         .build()
