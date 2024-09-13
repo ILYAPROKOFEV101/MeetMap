@@ -27,9 +27,7 @@
     <string name="yes">Join</string>
     <string name="no">No</string>
     <string name="addfriends">add friends</string>
-
-
-
+    <string name="title_activity_test">TestActivity</string>
 
 
 </resources>

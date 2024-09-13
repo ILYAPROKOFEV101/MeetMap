@@ -21,17 +21,17 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDaF5wvZj3dJFSYTZRx3XH9O_Oz8XsNETs" />
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDaF5wvZj3dJFSYTZRx3XH9O_Oz8XsNETs"/>
-        <activity
-            android:supportsRtl="true"
-            android:name=".Mine_menu.Map_Activity"
-            android:theme="@style/AppTheme"
-            android:exported="false"
-            android:label="@string/title_activity_main_menu" />
+            android:value="AIzaSyDaF5wvZj3dJFSYTZRx3XH9O_Oz8XsNETs" />
 
+        <activity
+            android:name=".Mine_menu.Map_Activity"
+            android:exported="false"
+            android:label="@string/title_activity_main_menu"
+            android:supportsRtl="true"
+            android:largeHeap="true"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -39,6 +39,7 @@
             android:theme="@style/Theme.MeetMap">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

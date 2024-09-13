@@ -36,7 +36,7 @@ fun showAddMarkerDialog(
     activity: FragmentActivity // добавлен параметр
 ) {
 
-    val addmarker = Map_Activity()
+   // val addmarker = Map_Activity()
 
     // Раздуйте макет диалога
     val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_marker, null)
@@ -170,7 +170,7 @@ fun showAddMarkerDialog(
                     // Запуск на главном потоке для обновления UI
                     withContext(Dispatchers.Main) {
 
-                        addmarker.set_addMarker(latLng, markerTitle)
+                     //   addmarker.set_addMarker(latLng, markerTitle)
 
                         val gson = Gson()
                         val markerDataJson = gson.toJson(markerData)

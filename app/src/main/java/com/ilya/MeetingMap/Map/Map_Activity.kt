@@ -16,6 +16,7 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
@@ -134,20 +135,26 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
     private companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 1
     }
+    private lateinit var backgroundHandler: Handler
+    private lateinit var handlerThread: HandlerThread
 
     var uid_main = ""
 
     override fun onCreate(savedInstanceState: Bundle?)  {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_map)
+
         // Инициализация WebSocketClient
         val uid_user = ID(userData = googleAuthUiClient.getSignedInUser())
+
+
         val url = "wss://meetmap.up.railway.app/map/$uid_user/${getUserKey(this)}"
         webSocketClient = WebSocketClient(url)
-        webSocketClient.start()
 
 
 
-        setContentView(R.layout.activity_map)
+
+
 
 
 
@@ -222,58 +229,70 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
         }
                 //WEBSOCKET
             // получаю данные по метка где я участник, по websoket
-        lifecycleScope.launch {
-            var previousMarkers: List<MarkerData>? = null // Храним предыдущие данные
-            while (true) {
-                val markerList: MutableList<MarkerData> = mutableListOf()
+        CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch {
+                var previousMarkers: List<MarkerData>? = null // Храним предыдущие данные
                 while (true) {
-                    try {
-                        // Ждем завершения асинхронного запроса
-                        val response = webSocketClient.sendCommandAndGetResponse("get_participant_mark $uid_main ${getUserKey(this@Map_Activity)}").await()
-                        Log.d("WebSocket i got", " $response")
+                    val markerList: MutableList<MarkerData> = mutableListOf()
+                    while (true) {
+                        try {
+                            // Ждем завершения асинхронного запроса
+                            val response = webSocketClient.sendCommandAndGetResponse(
+                                "get_participant_mark $uid_main ${
+                                    getUserKey(this@Map_Activity)
+                                }"
+                            ).await()
+                            Log.d("WebSocket i got", " $response")
 
-                        // Декодируем текущие данные из ответа
-                        val currentMarkers = Json.decodeFromString<List<MarkerData>>(response)
+                            // Декодируем текущие данные из ответа
+                            val currentMarkers = Json.decodeFromString<List<MarkerData>>(response)
 
-                        // Сравниваем текущие данные с предыдущими
-                        if (currentMarkers != previousMarkers) {
-                            // Данные изменились, обрабатываем их
-                            handleReceivedMarkers(response, "$uid", markerList)
+                            // Сравниваем текущие данные с предыдущими
+                            if (currentMarkers != previousMarkers) {
+                                // Данные изменились, обрабатываем их
 
-                            withContext(Dispatchers.Main) {
-                                // Обновление UI или выполнение других действий с данными
-                                currentMarkers.forEach { markerData ->
-                                    Log.d("WebSocket", "Marker: $markerData")
+                                handleReceivedMarkers(response, "$uid", markerList)
 
-                                    // Преобразование MarkerData в MapMarker
-                                    val mapMarker = markerDataToMapMarker(markerData)
+                                withContext(Dispatchers.Main) {
+                                    // Обновление UI или выполнение других действий с данными
+                                    currentMarkers.forEach { markerData ->
+                                        Log.d("WebSocket", "Marker: $markerData")
 
-                                    // Добавление маркера на карту
-                                    val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
-                                    val marker = addMarker(markerLatLng, mapMarker.name)
-                                    if (marker != null) {
-                                        markerDataMap[marker] = mapMarker
+                                        // Преобразование MarkerData в MapMarker
+                                        val mapMarker = markerDataToMapMarker(markerData)
+
+                                        // Добавление маркера на карту
+                                        val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
+                                        val marker = addMarker(markerLatLng, mapMarker.name)
+                                        if (marker != null) {
+                                            markerDataMap[marker] = mapMarker
+                                        }
                                     }
                                 }
+                            } else {
+                                Log.d(
+                                    "WebSocket",
+                                    "Markers unchanged, skipping handleReceivedMarkers"
+                                )
                             }
-                        } else {
-                            Log.d("WebSocket", "Markers unchanged, skipping handleReceivedMarkers")
+                            // Обновляем предыдущие данные
+                            previousMarkers = currentMarkers
+                        } catch (e: Exception) {
+                            Log.e("WebSocket", "Error processing markers", e)
                         }
-                        // Обновляем предыдущие данные
-                        previousMarkers = currentMarkers
-                    } catch (e: Exception) {
-                        Log.e("WebSocket", "Error processing markers", e)
+                        // Пауза перед следующим запросом
+                        delay(10000) // 10 секунд
                     }
-                    // Пауза перед следующим запросом
-                    delay(10000) // 10 секунд
                 }
             }
         }
+
 
     }
 
 
     private var isItemDecorationAdded = false // Флаг
+
 
     private suspend fun handleReceivedMarkers(jsonData: String, uid: String, markerList: MutableList<MarkerData>) {
 
@@ -448,102 +467,66 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-
         mMap = googleMap
-        mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-        // Включение отображения кнопки переключения типа карты
-        mMap.uiSettings.isMapToolbarEnabled = true
-        // Включение слоя спутниковой карты
         mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
-        // Включение слоя трафика
+        mMap.uiSettings.isMapToolbarEnabled = true
         mMap.isTrafficEnabled = false
-        // Включение слоя зданий
         mMap.isBuildingsEnabled = true
-        // Включение внутренних карт (если данные поддерживаются)
         mMap.isIndoorEnabled = true
-        // Отключение отображения магазинов, музеев и других POI
-        //  mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
-        // ключение отображения магазинов, кофе, ресторанов и других POI
+
         val styleOptions = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style)
         mMap.setMapStyle(styleOptions)
 
         val locationAutoCompleteTextView = findViewById<AutoCompleteTextView>(R.id.locationAutoCompleteTextView)
         val findButton = findViewById<ImageView>(R.id.findButton)
+        val routeButton = findViewById<ImageView>(R.id.routeButton)
 
         val adapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
         locationAutoCompleteTextView.setAdapter(adapter)
 
-        // Добавление слушателя нажатия по карте
-        mMap.setOnMapClickListener(this)
-
-        // Обработка выбора места из AutoCompleteTextView
         locationAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
             val selectedItem = adapter.getItem(position).toString()
             findLocation(selectedItem)
         }
-// Где я могу нати положение маркера
-        // Обработка нажатия на кнопку "Найти"
+
         findButton.setOnClickListener {
             val locationText = locationAutoCompleteTextView.text.toString()
             if (locationText.isNotEmpty()) {
                 findLocation(locationText)
-
             } else {
                 Toast.makeText(this, "Please enter a location", Toast.LENGTH_SHORT).show()
             }
         }
 
-
-        // Обработка выбора места из AutoCompleteTextView
-        locationAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
-            val selectedItem = adapter.getItem(position).toString()
-            findLocation(selectedItem)
-        }
-
-
-        if (ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.isMyLocationEnabled = true
 
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location: Location? ->
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                     location?.let {
-                        var currentLatLng = LatLng(it.latitude, it.longitude)
+                        val currentLatLng = LatLng(it.latitude, it.longitude)
                         currentLatLngGlobal = currentLatLng
-                        //   mMap.addMarker(MarkerOptions().position(currentLatLng).title("You are here"))
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
 
                         lifecycleScope.launch {
                             while (true) {
                                 try {
                                     val markers = getMarker(uid_main, LatLng(it.latitude, it.longitude))
-                                    // Обработка списка маркеров
                                     markers.forEach { mapMarker ->
-                                        val markerLatLngnew = LatLng(mapMarker.lat, mapMarker.lon)
-                                        CoroutineScope(Dispatchers.Main).launch {
-                                            val marker = addMarker(markerLatLngnew, mapMarker.name)
-                                            // Проверка на null
-                                            if (marker != null) {
-                                                // Сохраните соответствие между меткой и данными
-                                                markerDataMap[marker] = mapMarker
-                                            }
+                                        val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
+                                        val marker = addMarker(markerLatLng, mapMarker.name)
+                                        marker?.let {
+                                            markerDataMap[marker] = mapMarker
                                         }
                                     }
-
                                 } catch (e: Exception) {
-                                    // Обработка ошибки
-                                 //   Log.e("MarkerData", "Error fetching markers", e)
+                                    Log.e("MarkerData", "Error fetching markers", e)
                                 }
+                                delay(10000) // Задержка в 10 секунд
                             }
-
                         }
 
-
-                            // иотправку данных в WebSocket по таймеру
-                        // код котрый опредляет тряску телефона
                         shakeDetector = ShakeDetector(this, object : ShakeDetector.OnShakeListener {
                             private val shakeInterval: Long = 10 * 1000 // 10 секунд
                             private var lastShakeTime: Long = 0
@@ -552,15 +535,11 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                                 val currentTime = System.currentTimeMillis()
                                 if (currentTime - lastShakeTime >= shakeInterval) {
                                     lastShakeTime = currentTime
-
                                     val key = getUserKey(this@Map_Activity)
                                     val lat = currentLatLng.latitude
                                     val lon = currentLatLng.longitude
                                     val url = "wss://meetmap.up.railway.app/shake/$key/$lat/$lon"
-
-                                    // Открываем WebSocket
                                     webSocketManager.setupWebSocket(url)
-
                                     Toast.makeText(this@Map_Activity, "Телефон трясут! Подключение...", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Log.d("ShakeDetector", "Слишком рано для нового вызова.")
@@ -568,9 +547,6 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                             }
                         })
 
-
-
-                        // Отслеживание скорости и расстояния
                         updateSpeed(it.speed)
                         updateDistance(it)
 
@@ -579,39 +555,28 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                                 showMarkerDialog(mapMarker)
                                 Log.d("MarkerData_new2", mapMarker.toString())
                             }
-                            true // Возвращаем true, чтобы событие не обрабатывалось дальше
+                            true
                         }
                     }
                 }
+            }, 1000) // Задержка в 1 секунду перед выполнением кода
         }
 
-
-        // Добавление слушателя нажатия по карте
-        mMap.setOnMapClickListener(this)
-
-
-        // Инициализация объекта Polyline для отображения маршрута
         polyline = mMap.addPolyline(PolylineOptions().width(5f).color(android.graphics.Color.BLUE))
 
-            // Добавьте обработчик для кнопки проложения маршрута
-        val routeButton = findViewById<ImageView>(R.id.routeButton)
-
-        var isRouteDrawn = false // Флаг для проверки, построен ли маршрут
-
+        var isRouteDrawn = false
         routeButton.setOnClickListener {
             if (isRouteDrawn) {
-                // Если маршрут уже построен, удаляем его
-                currentPolyline?.remove() // Удаление полилинии
+                currentPolyline?.remove()
                 removeMarkers()
-                isRouteDrawn = false // Меняем состояние
+                isRouteDrawn = false
             } else {
-                // Если маршрут не построен, строим его
-                findLocation_route() // Функция для построения маршрута
-                isRouteDrawn = true // Меняем состояние
+                findLocation_route()
+                isRouteDrawn = true
             }
         }
-
     }
+
 
 
     private val markerList = mutableListOf<Marker>()  // Список для сохранения маркеров
@@ -681,6 +646,8 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false)
         return BitmapDescriptorFactory.fromBitmap(resizedBitmap)
     }
+
+
 
     private fun showMarkerDialog(marker: MapMarker) {
 
@@ -848,6 +815,20 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
         }
         lastLocation = location
     }
+
+
+    override fun onResume() {
+        super.onResume()
+        if (!::mMap.isInitialized) {
+            initializeMap() // Инициализировать карту, если она еще не инициализирована
+        }
+        webSocketClient.start()
+    }
+
+
+
+
+
 
     override fun onDestroy() {
         super.onDestroy()

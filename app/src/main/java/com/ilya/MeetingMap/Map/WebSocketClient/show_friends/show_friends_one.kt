@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 
  fun show_friends_one(uid: String,key: String,context: Context, data: List<Friends_type>) {
     if (data.isEmpty()) return  // Проверка на пустой список
-     val addmetod = Map_Activity()
+    // val addmetod = Map_Activity()
 
     // Inflate the custom layout for the dialog
     val dialogView = LayoutInflater.from(context).inflate(R.layout.friends_list, null)
