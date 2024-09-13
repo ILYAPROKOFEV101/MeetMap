@@ -550,6 +550,7 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                         updateSpeed(it.speed)
                         updateDistance(it)
 
+                        // Установка обработчика кликов по маркерам
                         mMap.setOnMarkerClickListener { marker ->
                             markerDataMap[marker]?.let { mapMarker ->
                                 showMarkerDialog(mapMarker)
@@ -557,25 +558,32 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                             }
                             true
                         }
+
+                        // Установка обработчика кликов по карте
+                        mMap.setOnMapClickListener { latLng ->
+                            showAddMarkerDialog(latLng, this, uid_main, this)
+                        }
+
+                        // Инициализация объекта Polyline
+                        polyline = mMap.addPolyline(PolylineOptions().width(5f).color(android.graphics.Color.BLUE))
+
+                        var isRouteDrawn = false
+                        routeButton.setOnClickListener {
+                            if (isRouteDrawn) {
+                                currentPolyline?.remove()
+                                removeMarkers()
+                                isRouteDrawn = false
+                            } else {
+                                findLocation_route()
+                                isRouteDrawn = true
+                            }
+                        }
                     }
                 }
             }, 1000) // Задержка в 1 секунду перед выполнением кода
         }
-
-        polyline = mMap.addPolyline(PolylineOptions().width(5f).color(android.graphics.Color.BLUE))
-
-        var isRouteDrawn = false
-        routeButton.setOnClickListener {
-            if (isRouteDrawn) {
-                currentPolyline?.remove()
-                removeMarkers()
-                isRouteDrawn = false
-            } else {
-                findLocation_route()
-                isRouteDrawn = true
-            }
-        }
     }
+
 
 
 
