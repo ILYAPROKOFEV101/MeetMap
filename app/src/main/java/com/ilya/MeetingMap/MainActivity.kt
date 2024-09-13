@@ -49,6 +49,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardDefaults.cardColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -82,6 +83,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -405,71 +409,76 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    val robotoMedium = FontFamily(
+        Font(R.font.roboto_medium) // Убедитесь, что имя файла правильное и соответствует переименованному файлу
+    )
+
+
+    @Preview(showBackground = true)
     @Composable
     fun LoginUsermenu() {
         auth = FirebaseAuth.getInstance()
+
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            modifier = Modifier.fillMaxSize().background(Color(0xFFAFAEAE)),
+            contentAlignment = Alignment.Center // Выравниваем по центру
         ) {
-            Card(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(600.dp)
-                    .clip(RoundedCornerShape(30.dp)),
-                colors = CardDefaults.cardColors(Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-
+                    .padding(start = 20.dp, end = 20.dp),
+            ) {
+                Text(
+                    text = "Sign in",
+                    fontSize = 35.sp,
+                    modifier = Modifier.align(Alignment.Start).padding(start = 10.dp),
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = robotoMedium
+                )
+                Spacer(modifier = Modifier.height(60.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .height(600.dp),
+                    colors = CardDefaults.cardColors(Color(0xFF999999)), // RGB 153, 153, 153 в шестнадцатеричном формате
+                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                 ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-
-                        item {
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = "Регистрация",
-                                    fontSize = 24.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.align(Alignment.Center)
-                                )
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .height(80.dp)
+                                ) {
+                                    Use_name()
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
                             }
-                            Spacer(modifier = Modifier.height(20.dp))
-
-                        }
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .height(80.dp)
-                            ) {
-                                Use_name()
-
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .height(80.dp)
+                                ) {
+                                    Password()
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
                             }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-                        }
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .height(80.dp)
-                            ) {
-                                Password()
-
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                        }
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .height(80.dp)
-                            )
-                            {
-                                Login(auth)
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .height(80.dp)
+                                ) {
+                                    Login(auth)
+                                }
                             }
                         }
                     }
@@ -477,12 +486,12 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+
+
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
     @Composable
     fun Use_name() {
-
-
-
         val keyboardControllers = LocalSoftwareKeyboardController.current
         var showtext by remember {
             mutableStateOf(false) }
