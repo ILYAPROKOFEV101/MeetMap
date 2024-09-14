@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -130,7 +131,8 @@ class MainActivity : ComponentActivity() {
         val selectedIcon: ImageVector,
         val unselectedIcon: ImageVector,
         val hasNews: Boolean,
-        val badgeCount: Int? = null) {
+        val badgeCount: Int? = null
+    ) {
     }
 
 
@@ -141,7 +143,6 @@ class MainActivity : ComponentActivity() {
 
     var username by mutableStateOf("")
     var password by mutableStateOf("")
-
 
 
     var cloth by mutableStateOf(true)
@@ -171,7 +172,7 @@ class MainActivity : ComponentActivity() {
                             val state by viewModel.state.collectAsStateWithLifecycle()
 
                             LaunchedEffect(key1 = Unit) {
-                                if(googleAuthUiClient.getSignedInUser() != null) {
+                                if (googleAuthUiClient.getSignedInUser() != null) {
                                     navController.navigate("profile")
                                 }
                             }
@@ -179,7 +180,7 @@ class MainActivity : ComponentActivity() {
                             val launcher = rememberLauncherForActivityResult(
                                 contract = ActivityResultContracts.StartIntentSenderForResult(),
                                 onResult = { result ->
-                                    if(result.resultCode == RESULT_OK) {
+                                    if (result.resultCode == RESULT_OK) {
                                         lifecycleScope.launch {
                                             val signInResult = googleAuthUiClient.signInWithIntent(
                                                 intent = result.data ?: return@launch
@@ -191,7 +192,7 @@ class MainActivity : ComponentActivity() {
                             )
 
                             LaunchedEffect(key1 = state.isSignInSuccessful) {
-                                if(state.isSignInSuccessful) {
+                                if (state.isSignInSuccessful) {
                                     Toast.makeText(
                                         applicationContext,
                                         "Регистрация прошла успешно",
@@ -250,7 +251,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 
 
     @Composable
@@ -324,10 +324,11 @@ class MainActivity : ComponentActivity() {
                             onClick = {
                                 Log.d("GoogleSignIn", "Attempting to sign in")
 
-                                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                    .requestIdToken(token)
-                                    .requestEmail()
-                                    .build()
+                                val gso =
+                                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                        .requestIdToken(token)
+                                        .requestEmail()
+                                        .build()
 
                                 val googleSignInClient = GoogleSignIn.getClient(context, gso)
                                 launcher.launch(googleSignInClient.signInIntent)
@@ -359,9 +360,11 @@ class MainActivity : ComponentActivity() {
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                        )
                         {
                             ButtonAppBar(navController)
                         }
@@ -382,13 +385,14 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun backtomenu(){
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
+    fun backtomenu() {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
             contentAlignment = Alignment.BottomEnd // Размещаем Box внизу
 
-        ){
+        ) {
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -412,6 +416,9 @@ class MainActivity : ComponentActivity() {
     val robotoMedium = FontFamily(
         Font(R.font.roboto_medium) // Убедитесь, что имя файла правильное и соответствует переименованному файлу
     )
+    val robotoBold = FontFamily(
+        Font(R.font.roboto_bold) // Убедитесь, что имя файла правильное и соответствует переименованному файлу
+    )
 
 
     @Preview(showBackground = true)
@@ -420,7 +427,9 @@ class MainActivity : ComponentActivity() {
         auth = FirebaseAuth.getInstance()
 
         Box(
-            modifier = Modifier.fillMaxSize().background(Color(0xFFAFAEAE)),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFB8B7B7)),
             contentAlignment = Alignment.Center // Выравниваем по центру
         ) {
             Column(
@@ -432,7 +441,9 @@ class MainActivity : ComponentActivity() {
                 Text(
                     text = "Sign in",
                     fontSize = 35.sp,
-                    modifier = Modifier.align(Alignment.Start).padding(start = 10.dp),
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(start = 10.dp),
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
                     fontFamily = robotoMedium
@@ -443,7 +454,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
                         .height(600.dp),
-                    colors = CardDefaults.cardColors(Color(0xFF999999)), // RGB 153, 153, 153 в шестнадцатеричном формате
+                    colors = CardDefaults.cardColors(Color(0xFFCFCDCD)), // RGB 153, 153, 153 в шестнадцатеричном формате
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                 ) {
                     Column(
@@ -455,10 +466,11 @@ class MainActivity : ComponentActivity() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .height(80.dp)
+                                        .height(100.dp)
                                 ) {
-                                    Use_name()
-                                }
+                                        Use_name()
+                                   }
+
                                 Spacer(modifier = Modifier.height(10.dp))
                             }
                             item {
@@ -488,68 +500,74 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
     @Composable
     fun Use_name() {
+
         val keyboardControllers = LocalSoftwareKeyboardController.current
-        var showtext by remember {
-            mutableStateOf(false) }
-        Card(modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp)
-            .clip(RoundedCornerShape(30.dp))
-            .height(100.dp)
-            .border(
-                border = BorderStroke(2.dp, SolidColor(Color.Blue)),
-                shape = RoundedCornerShape(30.dp)
-            ),
-            shape = RoundedCornerShape(30.dp)
-        ){
-            TextField(
-                modifier = Modifier.fillMaxSize(),
-                value = username, // Текущее значение текста в поле
-                onValueChange = {
-                    username = it
-                }, // Обработчик изменения текста, обновляющий переменную "text"
-                textStyle = TextStyle(fontSize = 24.sp),
+        var showtext by remember { mutableStateOf(false) }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 30.dp, end = 30.dp),
+            ) {
+                Spacer(modifier = Modifier.height(10.dp))
+                // Текст, который будет над полем ввода
+                Text(
+                    text = "Email",
+                    fontSize = 20.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+
+                    fontFamily = robotoBold
+                )
+                // Поле ввода
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .border(
+                            border = BorderStroke(3.dp, SolidColor(Color.Black)),
+                            shape = RoundedCornerShape(20.dp)
 
 
-                colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = Color.White, // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
-                    unfocusedIndicatorColor = Color.White, // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
-                    disabledIndicatorColor = Color.White, // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
-                    containerColor = Color.White
-                ),
+                        ),
 
-                label = { // Метка, которая отображается над полем ввода
 
-                    Text(
-                        text = "email",
-                        fontSize = 24.sp,
-                        color = Color.Black,
-                        textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()
-                    )
+                    value = username, // Текущее значение текста в поле
+                    onValueChange = {
+                        username = it
+                    }, // Обработчик изменения текста, обновляющий переменную "username"
+                    textStyle = TextStyle(fontSize = 20.sp),
 
-                },
 
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done, // Действие на кнопке "Готово" на клавиатуре (закрытие клавиатуры)
-                    keyboardType = KeyboardType.Text // Тип клавиатуры (обычный текст)
-                ),
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = Color.White, // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
+                        unfocusedIndicatorColor = Color.White, // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
+                        disabledIndicatorColor = Color.White, // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
+                        containerColor = Color(0xFFCFCDCD)
+                    ),
 
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        keyboardControllers?.hide() // Обработчик действия при нажатии на кнопку "Готово" на клавиатуре (скрыть клавиатуру)
-                        if (username != "") {
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done, // Действие на кнопке "Готово" на клавиатуре (закрытие клавиатуры)
+                        keyboardType = KeyboardType.Text // Тип клавиатуры (обычный текст)
+                    ),
+
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            keyboardControllers?.hide() // Обработчик действия при нажатии на кнопку "Готово" на клавиатуре (скрыть клавиатуру)
                             showtext = !showtext
                         }
-
-                    }
-                ),
-            )
+                    ),
+                )
+            }
         }
-    }
+
+
+
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
     @Composable
