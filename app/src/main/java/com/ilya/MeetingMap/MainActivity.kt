@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -20,6 +21,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +60,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -74,9 +77,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -315,7 +323,8 @@ class MainActivity : ComponentActivity() {
 
                     Column(
                         modifier = Modifier
-                            .wrapContentSize(),
+                            .fillMaxSize()
+                            .background(Color.White),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -353,7 +362,7 @@ class MainActivity : ComponentActivity() {
                         }
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Text(stringResource(id = R.string.login))
+                        Text(stringResource(id = R.string.login), fontSize = 20.sp, fontFamily = robotoBold)
 
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -364,6 +373,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(100.dp)
+                                .background(Color.White)
                         )
                         {
                             ButtonAppBar(navController)
@@ -429,7 +439,7 @@ class MainActivity : ComponentActivity() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFB8B7B7)),
+                .background(Color(0xFFEEEEEE)),
             contentAlignment = Alignment.Center // Выравниваем по центру
         ) {
             Column(
@@ -477,7 +487,7 @@ class MainActivity : ComponentActivity() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .height(80.dp)
+                                        .height(100.dp)
                                 ) {
                                     Password()
                                 }
@@ -487,7 +497,7 @@ class MainActivity : ComponentActivity() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .height(80.dp)
+                                        .height(60.dp)
                                 ) {
                                     Login(auth)
                                 }
@@ -510,12 +520,13 @@ class MainActivity : ComponentActivity() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(Color(0xFFCFCDCD))
                     .padding(start = 30.dp, end = 30.dp),
             ) {
                 Spacer(modifier = Modifier.height(10.dp))
                 // Текст, который будет над полем ввода
                 Text(
-                    text = "Email",
+                    text = stringResource(id = R.string.email),
                     fontSize = 20.sp,
                     color = Color.Black,
                     textAlign = TextAlign.Start,
@@ -533,10 +544,7 @@ class MainActivity : ComponentActivity() {
                             border = BorderStroke(3.dp, SolidColor(Color.Black)),
                             shape = RoundedCornerShape(20.dp)
 
-
                         ),
-
-
                     value = username, // Текущее значение текста в поле
                     onValueChange = {
                         username = it
@@ -545,9 +553,9 @@ class MainActivity : ComponentActivity() {
 
 
                     colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.White, // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
-                        unfocusedIndicatorColor = Color.White, // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
-                        disabledIndicatorColor = Color.White, // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
+                        focusedIndicatorColor = Color(0xFFCFCDCD), // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
+                        unfocusedIndicatorColor = Color(0xFFCFCDCD), // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
+                        disabledIndicatorColor = Color(0xFFCFCDCD), // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
                         containerColor = Color(0xFFCFCDCD)
                     ),
 
@@ -579,20 +587,31 @@ class MainActivity : ComponentActivity() {
 
         var passwordError by remember { mutableStateOf(false) }
 
-        Card(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp)
-                .clip(RoundedCornerShape(30.dp))
-                .height(100.dp)
-                .border(
-                    border = BorderStroke(2.dp, SolidColor(Color.Blue)),
-                    shape = RoundedCornerShape(30.dp)
-                ),
-            shape = RoundedCornerShape(30.dp)
+                .fillMaxSize()
+                .padding(start = 30.dp, end = 30.dp),
         ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            // Текст, который будет над полем ввода
+            Text(
+                text = stringResource(id = R.string.password),
+                fontSize = 20.sp,
+                color = Color.Black,
+                textAlign = TextAlign.Start,
+                modifier = Modifier
+                    .fillMaxWidth(),
+
+                fontFamily = robotoBold
+            )
             TextField(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .border(
+                        border = BorderStroke(3.dp, SolidColor(Color.Black)),
+                        shape = RoundedCornerShape(20.dp)
+                    ),
                 value = password, // Текущее значение текста в поле
                 onValueChange = {
                     password = it
@@ -600,20 +619,12 @@ class MainActivity : ComponentActivity() {
                 }, // Обработчик изменения текста, обновляющий переменную "password" и проверяющий длину
                 textStyle = TextStyle(fontSize = 24.sp),
                 colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.White,
-                    disabledIndicatorColor = Color.White,
-                    containerColor = Color.White
+                    focusedIndicatorColor = Color(0xFFCFCDCD),
+                    unfocusedIndicatorColor = Color(0xFFCFCDCD),
+                    disabledIndicatorColor = Color(0xFFCFCDCD),
+                    containerColor = Color(0xFFCFCDCD)
                 ),
-                label = { // Метка, которая отображается над полем ввода
-                    Text(
-                        text = "Пароль",
-                        fontSize = 24.sp,
-                        color = Color.Black,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
+
                 isError = passwordError, // Показываем ошибку, если пароль слишком короткий
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done,
@@ -658,47 +669,36 @@ class MainActivity : ComponentActivity() {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp)
-                .height(100.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xB900CE0A)),
-            shape = RoundedCornerShape(30.dp)
+                .padding(start = 30.dp, end = 30.dp)
+                .height(60.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xB93998FF)),
+            shape = RoundedCornerShape(20.dp)
         ) {
-            Text(text = "Зайти", fontSize = 30.sp)
+            Text(text = stringResource(id = R.string.singin), fontSize = 30.sp)
         }
     }
 }
 
+val robotoBold = FontFamily(
+    Font(R.font.roboto_bold) // Убедитесь, что имя файла правильное и соответствует переименованному файлу
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ButtonAppBar(navController: NavController) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-        // .background(Color(0xFFFFFFFF)),
-    ) {
+
 
         var selectedItemIndex by rememberSaveable {
             mutableStateOf(0)
         }
 
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .height(80.dp)
-                .align(Alignment.BottomCenter)
-                .clip(RoundedCornerShape(30.dp))
-                .background(Color.White.copy(alpha = 0.5f))
-        ) {
-            NavigationBar(modifier = Modifier.align(Alignment.BottomCenter)) {
+            NavigationBar(
+                modifier = Modifier.wrapContentSize(),
+                containerColor = Color.White
+            ) {
                 val items = listOf(
-                    /* MainActivity.BottomNavigationItem(
-                         title = "User",
-                         selectedIcon = Icons.Filled.Person,
-                         unselectedIcon = Icons.Outlined.Person,
-                         hasNews = false,
-                     ),*/
                     MainActivity.BottomNavigationItem(
-                        title = "Зайти используя почту",
+                        title = stringResource(id = R.string.logwithemail),
                         selectedIcon = Icons.Filled.Email,
                         unselectedIcon = Icons.Outlined.Email,
                         hasNews = false,
@@ -719,11 +719,10 @@ fun ButtonAppBar(navController: NavController) {
                             selectedItemIndex = index
                             when (index) {
                                 0 -> navController.navigate("login")
-                                // 1 -> navController.navigate("admin_fragment")
                             }
                         },
                         label = {
-                            Text(text = item.title)
+                            Text(text = item.title, fontSize = 20.sp, fontFamily = robotoBold)
                         },
                         alwaysShowLabel = false,
                         icon = {
@@ -733,47 +732,81 @@ fun ButtonAppBar(navController: NavController) {
                                 } else item.unselectedIcon,
                                 contentDescription = item.title
                             )
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.Black, // цвет выбранного значка
+                            unselectedIconColor = Color.Gray, // цвет невыбранного значка
+                            selectedTextColor = Color.Black, // цвет текста
+                            unselectedTextColor = Color.Gray, // цвет невыбранного текста
+                            indicatorColor = Color.White // цвет фона кнопки
+                        )
                     )
                 }
             }
         }
-    }
-}
+
+
+
 
 
 @Preview(showBackground = true)
 @Composable
 fun LoadingCircle() {
-    Box(  modifier = Modifier
-        .height(100.dp)
-
-
-        .wrapContentSize(Alignment.TopCenter)
+    Box(
+        modifier = Modifier
+            .height(100.dp)
+            .wrapContentSize(Alignment.Center)
     ) {
-
-
+        // Анимация вращения
         val rotation = rememberInfiniteTransition().animateFloat(
             initialValue = 0f,
             targetValue = 360f,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 1000, easing = LinearEasing),
+                animation = tween(durationMillis = 2000, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart
             )
         )
 
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(100.dp)
+        // Анимация для угла дуги (создаем эффект, что круг почти замкнут)
+        val sweepAngle = rememberInfiniteTransition().animateFloat(
+            initialValue = 1f,  // Начальный минимальный угол
+            targetValue = 359f,  // Максимальный угол
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 20000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+        // Определяем кастомные цвета для градиента
+        val rainbowBrush = Brush.sweepGradient(
+            colors = listOf(
+                Color.Red,
+                Color(0xFFFFA500),  // Оранжевый
+                Color.Yellow,
+                Color(0xA14557FF),
+                Color(0xDA6EB7E7),  // Индиго
+                Color(0xFF8A2BE2)   // Фиолетовый
+            )
+        )
+
+        // Canvas для рисования кастомного кольца с градиентом
+        Canvas(
+            modifier = Modifier
+                .size(100.dp)
+                .rotate(rotation.value)  // Вращаем кольцо
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .size(90.dp)
-                //.rotate(rotation.value)
+            // Рисуем дугу с градиентом, которая не будет полной
+            drawArc(
+                brush = rainbowBrush,
+                startAngle = 0f,
+                sweepAngle = sweepAngle.value,  // Анимируемый угол дуги
+                useCenter = false,  // Чтобы не заполнять центр
+                style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)  // Толщина и форма концов линий
             )
         }
     }
 }
+
+
 
 
 @Composable

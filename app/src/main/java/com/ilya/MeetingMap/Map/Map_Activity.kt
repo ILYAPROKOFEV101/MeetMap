@@ -1,6 +1,7 @@
 package com.ilya.MeetingMap.Mine_menu
 
 
+import Get_MY_Participant
 import com.ilya.MeetingMap.Map.Server_API.Became_Participant_fun
 import MapMarker
 import MarkerAdapter
@@ -74,6 +75,7 @@ import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 import decodePoly
 import getMapRoute
+import getParticipant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -232,83 +234,63 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
         CoroutineScope(Dispatchers.IO).launch {
             lifecycleScope.launch {
                 var previousMarkers: List<MarkerData>? = null // Храним предыдущие данные
+                val markerList: MutableList<MarkerData> = mutableListOf()
                 while (true) {
-                    val markerList: MutableList<MarkerData> = mutableListOf()
-                    while (true) {
-                        try {
-                            // Ждем завершения асинхронного запроса
-                            val response = webSocketClient.sendCommandAndGetResponse(
-                                "get_participant_mark $uid_main ${
-                                    getUserKey(this@Map_Activity)
-                                }"
-                            ).await()
-                            Log.d("WebSocket i got", " $response")
+                    try {
+                        // Получаем данные через getParticipant
+                        val currentMarkers = getParticipant(uid.toString(), getUserKey(this@Map_Activity).toString())
 
-                            // Декодируем текущие данные из ответа
-                            val currentMarkers = Json.decodeFromString<List<MarkerData>>(response)
+                        Log.d("WebSocket", "Received marker data: $currentMarkers")
 
-                            // Сравниваем текущие данные с предыдущими
-                            if (currentMarkers != previousMarkers) {
-                                // Данные изменились, обрабатываем их
+                        // Сравниваем текущие данные с предыдущими
+                        if (currentMarkers != previousMarkers) {
+                            // Данные изменились, обрабатываем их
+                            handleReceivedMarkers("$uid", currentMarkers.toMutableList())
 
-                                handleReceivedMarkers(response, "$uid", markerList)
+                            withContext(Dispatchers.Main) {
+                                // Обновление UI или выполнение других действий с данными
+                                currentMarkers.forEach { markerData ->
+                                    Log.d("WebSocket", "Marker: $markerData")
 
-                                withContext(Dispatchers.Main) {
-                                    // Обновление UI или выполнение других действий с данными
-                                    currentMarkers.forEach { markerData ->
-                                        Log.d("WebSocket", "Marker: $markerData")
+                                    // Преобразование MarkerData в MapMarker
+                                    val mapMarker = markerDataToMapMarker(markerData)
 
-                                        // Преобразование MarkerData в MapMarker
-                                        val mapMarker = markerDataToMapMarker(markerData)
-
-                                        // Добавление маркера на карту
-                                        val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
-                                        val marker = addMarker(markerLatLng, mapMarker.name)
-                                        if (marker != null) {
-                                            markerDataMap[marker] = mapMarker
-                                        }
+                                    // Добавление маркера на карту
+                                    val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
+                                    val marker = addMarker(markerLatLng, mapMarker.name)
+                                    if (marker != null) {
+                                        markerDataMap[marker] = mapMarker
                                     }
                                 }
-                            } else {
-                                Log.d(
-                                    "WebSocket",
-                                    "Markers unchanged, skipping handleReceivedMarkers"
-                                )
                             }
-                            // Обновляем предыдущие данные
-                            previousMarkers = currentMarkers
-                        } catch (e: Exception) {
-                            Log.e("WebSocket", "Error processing markers", e)
+                        } else {
+                            Log.d("WebSocket", "Markers unchanged, skipping handleReceivedMarkers")
                         }
-                        // Пауза перед следующим запросом
-                        delay(10000) // 10 секунд
+                        // Обновляем предыдущие данные
+                        previousMarkers = currentMarkers
+                    } catch (e: Exception) {
+                        Log.e("WebSocket", "Error processing markers", e)
                     }
+                    // Пауза перед следующим запросом
+                    delay(10000) // 10 секунд
                 }
             }
         }
 
-
     }
+
+
+
 
 
     private var isItemDecorationAdded = false // Флаг
 
 
-    private suspend fun handleReceivedMarkers(jsonData: String, uid: String, markerList: MutableList<MarkerData>) {
+    private suspend fun handleReceivedMarkers(uid: String, markerList: MutableList<MarkerData>) {
 
-        val markers = withContext(Dispatchers.IO) {
-            try {
-                Json.decodeFromString<List<MarkerData>>(jsonData)
-            } catch (e: Exception) {
-                Log.e("WebSocket", "Error parsing JSON: ${e.message}")
-                emptyList<MarkerData>()
-            }
-        }
+
 
         withContext(Dispatchers.Main) {
-            if (markers.isNotEmpty()) {
-                markerList.clear()
-                markerList.addAll(markers)
 
                 Log.d("WebSocket", "Markers updated: $markerList")
 
@@ -328,10 +310,8 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                 } else {
                     recyclerView.adapter = MarkerAdapter(markerList, this@Map_Activity, uid)
                 }
-            } else {
-                Log.d("WebSocket", "No new markers or markers are the same")
             }
-        }
+
     }
 
         // Вызов алерт диалог , для тогочтобы показать друга

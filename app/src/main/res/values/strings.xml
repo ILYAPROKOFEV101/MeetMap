@@ -28,6 +28,14 @@
     <string name="no">No</string>
     <string name="addfriends">add friends</string>
     <string name="title_activity_test">TestActivity</string>
+    <string name="singin">Sing in</string>
+    <string name="email">Email</string>
+    <string name="logwithemail">Sing in using email</string>
+    <string name="password">Password</string>
+
+
+
+
 
 
 </resources>
