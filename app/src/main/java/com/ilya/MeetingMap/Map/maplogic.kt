@@ -21,48 +21,48 @@ import retrofit2.http.Query
 import java.io.IOException
 import java.util.Locale
 
-fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
-    when (icon) {
-        is Int -> {
-            val vectorDrawable = ContextCompat.getDrawable(context, icon)
-            vectorDrawable?.let {
-                val drawable = DrawableCompat.wrap(it).mutate()
+    fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
+        when (icon) {
+            is Int -> {
+                val vectorDrawable = ContextCompat.getDrawable(context, icon)
+                vectorDrawable?.let {
+                    val drawable = DrawableCompat.wrap(it).mutate()
 
-                val color = Color.fromHex(colorString).toArgb() // Получаем ARGB представление цвета
+                    val color = Color.fromHex(colorString).toArgb() // Получаем ARGB представление цвета
 
 
-                DrawableCompat.setTint(drawable, color)
-                drawable.setBounds(0, 0, width, height) // Устанавливаем заданный размер
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bitmap)
-                drawable.draw(canvas)
+                    DrawableCompat.setTint(drawable, color)
+                    drawable.setBounds(0, 0, width, height) // Устанавливаем заданный размер
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bitmap)
+                    drawable.draw(canvas)
+                    return BitmapDescriptorFactory.fromBitmap(bitmap)
+                }
+            }
+            is BitmapDrawable -> {
+                val bitmap = Bitmap.createScaledBitmap(icon.bitmap, width, height, false)
                 return BitmapDescriptorFactory.fromBitmap(bitmap)
             }
+            else -> {
+                // Обработка других типов источников, если необходимо
+            }
         }
-        is BitmapDrawable -> {
-            val bitmap = Bitmap.createScaledBitmap(icon.bitmap, width, height, false)
-            return BitmapDescriptorFactory.fromBitmap(bitmap)
-        }
-        else -> {
-            // Обработка других типов источников, если необходимо
-        }
-    }
-    // В случае ошибки возвращаем стандартный маркер
-    return BitmapDescriptorFactory.defaultMarker()
-}
-
-
-
-fun Color.Companion.fromHex(colorString: String): Color {
-    val colorWithoutHash = colorString.removePrefix("#") // Убираем #, если он есть
-
-    if (colorWithoutHash.length != 6 && colorWithoutHash.length != 8) {
-        throw IllegalArgumentException("Invalid hex color string: $colorString")
+        // В случае ошибки возвращаем стандартный маркер
+        return BitmapDescriptorFactory.defaultMarker()
     }
 
-    val color = android.graphics.Color.parseColor("#$colorWithoutHash") // Добавляем #, если его не было
-    return Color(color)
-}
+
+
+    fun Color.Companion.fromHex(colorString: String): Color {
+        val colorWithoutHash = colorString.removePrefix("#") // Убираем #, если он есть
+
+        if (colorWithoutHash.length != 6 && colorWithoutHash.length != 8) {
+            throw IllegalArgumentException("Invalid hex color string: $colorString")
+        }
+
+        val color = android.graphics.Color.parseColor("#$colorWithoutHash") // Добавляем #, если его не было
+        return Color(color)
+    }
 
 
 fun getAddressFromLatLon(context: Context, lat: Double, lon: Double): String? {
