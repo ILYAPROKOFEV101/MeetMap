@@ -32,10 +32,7 @@
     <string name="email">Email</string>
     <string name="logwithemail">Sing in using email</string>
     <string name="password">Password</string>
-
-
-
-
+    <string name="title_activity_social_map">SocialMapActivity</string>
 
 
 </resources>

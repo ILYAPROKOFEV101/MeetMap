@@ -44,6 +44,8 @@ firebaseCrashlyticsBuildtools = "3.0.2"
 transportRuntime = "3.3.0"
 protoliteWellKnownTypes = "18.0.0"
 firebaseDatabaseKtx = "21.0.0"
+legacySupportV4 = "1.0.0"
+recyclerview = "1.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -96,6 +98,8 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 transport-runtime = { group = "com.google.android.datatransport", name = "transport-runtime", version.ref = "transportRuntime" }
 protolite-well-known-types = { group = "com.google.firebase", name = "protolite-well-known-types", version.ref = "protoliteWellKnownTypes" }
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
+androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

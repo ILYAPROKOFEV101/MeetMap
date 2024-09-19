@@ -40,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -75,6 +76,8 @@ dependencies {
     implementation(libs.transport.runtime)
     implementation(libs.protolite.well.known.types)
     implementation(libs.firebase.database.ktx)
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.recyclerview)
     testImplementation(libs.junit)
 
     implementation(libs.coil.compose) // Coil для загрузки изображений (Compose)

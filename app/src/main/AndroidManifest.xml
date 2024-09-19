@@ -17,6 +17,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MeetMap"
         tools:targetApi="31">
+        <activity
+            android:name=".SocialMap.SocialMapActivity"
+            android:exported="false"
+            android:label="@string/title_activity_social_map"
+            android:theme="@style/Theme.MeetMap" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -29,8 +34,8 @@
             android:name=".Mine_menu.Map_Activity"
             android:exported="false"
             android:label="@string/title_activity_main_menu"
-            android:supportsRtl="true"
             android:largeHeap="true"
+            android:supportsRtl="true"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".MainActivity"
