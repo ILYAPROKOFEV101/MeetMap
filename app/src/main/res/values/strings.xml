@@ -33,6 +33,7 @@
     <string name="logwithemail">Sing in using email</string>
     <string name="password">Password</string>
     <string name="title_activity_social_map">SocialMapActivity</string>
+    <string name="write_user_name">Write friends name</string>
 
 
 </resources>

@@ -2,9 +2,11 @@ package com.ilya.MeetingMap.SocialMap.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.ilya.MeetingMap.R
 
 // Set of Material typography styles to start with
 val Typography = Typography(
@@ -31,4 +33,24 @@ val Typography = Typography(
         letterSpacing = 0.5.sp
     )
     */
+)
+val robotoBold = FontFamily(
+    Font(R.font.roboto_bold, FontWeight.Bold)
+)
+
+val CustomTypography = Typography(
+    bodyLarge = TextStyle(
+        fontFamily = robotoBold, // ваш кастомный шрифт
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    titleLarge = TextStyle(
+        fontFamily = robotoBold,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    )
 )
