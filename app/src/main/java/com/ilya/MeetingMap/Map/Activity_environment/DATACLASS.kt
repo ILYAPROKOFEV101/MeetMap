@@ -1,7 +1,6 @@
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
 
 data class MapProperties(val googleMap: com.google.android.gms.maps.GoogleMap)
 data class MapUiSettings(val uiSettings: com.google.android.gms.maps.UiSettings)

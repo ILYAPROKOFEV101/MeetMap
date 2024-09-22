@@ -15,7 +15,6 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.gson.Gson
 import com.ilya.MeetingMap.Map.Server_API.postInvite
-import com.ilya.MeetingMap.Mine_menu.Map_Activity
 import com.ilya.MeetingMap.R
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 import kotlinx.coroutines.CoroutineScope

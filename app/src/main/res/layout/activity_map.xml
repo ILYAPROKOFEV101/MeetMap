@@ -64,7 +64,7 @@
 
 <LinearLayout
         android:layout_width="69dp"
-        android:layout_height="174dp"
+        android:layout_height="235dp"
         android:layout_gravity="center|right"
 
         android:orientation="vertical">
@@ -96,6 +96,15 @@
             android:padding="5.dp"
             android:text="Проложить маршрут"
             map:srcCompat="@drawable/explore_24px" />
+    <ImageView
+            android:id="@+id/social"
+            android:layout_width="match_parent"
+            android:layout_height="57dp"
+            android:contentDescription="Проложить маршрут"
+            android:onClick="onSatelliteButtonClick"
+            android:padding="5.dp"
+            android:text="Проложить маршрут"
+            map:srcCompat="@drawable/group24px" />
 
     </LinearLayout>
 

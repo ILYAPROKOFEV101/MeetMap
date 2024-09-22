@@ -9,6 +9,7 @@ import MarkerData
 import SpaceItemDecoration
 import WebSocketCallback
 import WebSocketManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -68,6 +69,7 @@ import com.ilya.MeetingMap.Map.shake_logik.ShakeDetector
 
 
 import com.ilya.MeetingMap.R
+import com.ilya.MeetingMap.SocialMap.SocialMapActivity
 import com.ilya.codewithfriends.presentation.profile.ID
 import com.ilya.codewithfriends.presentation.profile.IMG
 import com.ilya.codewithfriends.presentation.profile.UID
@@ -460,6 +462,13 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
         val locationAutoCompleteTextView = findViewById<AutoCompleteTextView>(R.id.locationAutoCompleteTextView)
         val findButton = findViewById<ImageView>(R.id.findButton)
         val routeButton = findViewById<ImageView>(R.id.routeButton)
+        val socialbutton = findViewById<ImageView>(R.id.social)
+
+
+        socialbutton.setOnClickListener{
+            val intent = Intent(this, SocialMapActivity::class.java)
+            startActivity(intent)
+        }
 
         val adapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
         locationAutoCompleteTextView.setAdapter(adapter)
