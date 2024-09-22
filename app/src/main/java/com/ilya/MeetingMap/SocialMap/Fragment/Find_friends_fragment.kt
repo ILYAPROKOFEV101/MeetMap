@@ -4,22 +4,29 @@ import Friend
 import FriendsViewModel
 import WebSocketFindFriends
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Layout.Alignment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
@@ -34,13 +42,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -65,6 +76,10 @@ import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
+import coil.compose.rememberAsyncImagePainter
+import com.ilya.MeetingMap.SocialMap.ui.theme.robotomedium
+import kotlinx.coroutines.*
 
 
 class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
@@ -79,7 +94,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
         )
     }
 
-    private lateinit var webSocketFindFriends : WebSocketFindFriends
+    private lateinit var webSocketFindFriends: WebSocketFindFriends
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -91,33 +106,33 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
 
             setContent {
                 SocialMap {
-                    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onPrimaryContainer) {
-                        Column(Modifier
-                            .fillMaxSize()
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        Column(
+                            Modifier
+                                .fillMaxSize()
                         ) {
+                            Spacer(modifier = Modifier.height(20.dp))
+                            // Убираем weight у Box
                             Box(
                                 Modifier
-                                    .weight(1f)
-                                    .height(100.dp)
-                            )
-                            {
-                                SearchBar()
-                            }
-                            Box(modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                            ){
-                                Friends_list(friendsList) // Используем список из ViewModel
+                                    .height(150.dp) // Занимает только необходимое место
+                                    .fillMaxWidth()
+                            ) {
+                                SearchBar() // Поисковая строка
                             }
 
+                            // FriendsList займёт оставшееся пространство
+                            FriendsList(friendsList)
                         }
                     }
                 }
             }
+
         }
 
     }
-
 
 
     override fun onStart() {
@@ -126,9 +141,13 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
             userData = googleAuthUiClient.getSignedInUser()
         )
         val key = getUserKey(requireContext())
-        if( key != null && uid != null ){
-            webSocketFindFriends = WebSocketFindFriends("wss://meetmap.up.railway.app/findFriends/$uid/$key", this )
-            Log.d("Websocket_friends","wss://meetmap.up.railway.app/findFriends/findFriends/$uid/$key")
+        if (key != null && uid != null) {
+            webSocketFindFriends =
+                WebSocketFindFriends("wss://meetmap.up.railway.app/findFriends/$uid/$key", this)
+            Log.d(
+                "Websocket_friends",
+                "wss://meetmap.up.railway.app/findFriends/findFriends/$uid/$key"
+            )
         }
 
     }
@@ -144,7 +163,9 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
         Log.d("Websocket_friends", friends.toString())
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class,
+        DelicateCoroutinesApi::class
+    )
     @Preview
     @Composable
     fun SearchBar() {
@@ -200,19 +221,47 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     ),
                 )
             }
+
+
         }
+
+
+             
+
+
+        LaunchedEffect(key1 = username) {
+            while (isActive) {
+                delay(3000)  // Ждем 5 секунд
+                // Отправляем команду каждые 5 секунд
+                if(username != ""){
+                    webSocketFindFriends.sendCommand("findFriends $username")
+                }
+
+            }
+        }
+        //    webSocketFindFriends.sendCommand("findFriends $username")
+
     }
 
 
     @Composable
-    fun Friends_list(friends: List<Friend>) {
-        MaterialTheme {
+    fun FriendsList(friends: List<Friend>) {
+        SocialMap {
+            Box(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .background(MaterialTheme.colorScheme.background) // Цвет зависит от темы
+                    .padding(start = 30.dp, end = 30.dp),
+
+            )
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .wrapContentHeight()
+                    .fillMaxWidth()
             ) {
                 items(friends) { friend ->
                     FriendItem(friend)
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
@@ -223,12 +272,60 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(start = 30.dp, end = 30.dp)
+                .height(100.dp)
+            //.padding(8.dp)
         ) {
-            // Отображение информации о друге
-            Text(text = friend.name) // Например, имя друга
+            // Аватар
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(0.3f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.surface) // Цвет фона поверхности
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(friend.img),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(90.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Column(
+                Modifier
+                    .weight(0.7f)
+                    .fillMaxHeight()
+            ) {
+                Spacer(modifier = Modifier.height(5.dp))
+                // Имя друга
+                Text(
+                    text = friend.name,
+                    fontFamily = robotomedium,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface // Цвет текста
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Кнопка
+                Button(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .wrapContentHeight(),
+                    onClick = { /* TODO: Логика для добавления друга */ },
+                    colors = ButtonDefaults.buttonColors(
+                        MaterialTheme.colorScheme.primary, // Цвет кнопки
+                        contentColor = MaterialTheme.colorScheme.onPrimary // Цвет текста на кнопке
+                    )
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.addfriends),
+                        fontFamily = robotomedium,
+                        fontSize = 20.sp
+                    )
+                }
+            }
         }
     }
-
 }
-

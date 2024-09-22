@@ -37,6 +37,9 @@ val Typography = Typography(
 val robotoBold = FontFamily(
     Font(R.font.roboto_bold, FontWeight.Bold)
 )
+val robotomedium = FontFamily(
+    Font(R.font.roboto_medium )
+)
 
 val CustomTypography = Typography(
     bodyLarge = TextStyle(

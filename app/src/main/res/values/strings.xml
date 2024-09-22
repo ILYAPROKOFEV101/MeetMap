@@ -26,7 +26,7 @@
     <string name="my_tags">My tags</string>
     <string name="yes">Join</string>
     <string name="no">No</string>
-    <string name="addfriends">add friends</string>
+    <string name="addfriends">Add friends</string>
     <string name="title_activity_test">TestActivity</string>
     <string name="singin">Sing in</string>
     <string name="email">Email</string>
@@ -34,6 +34,7 @@
     <string name="password">Password</string>
     <string name="title_activity_social_map">SocialMapActivity</string>
     <string name="write_user_name">Write friends name</string>
+
 
 
 </resources>
