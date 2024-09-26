@@ -80,12 +80,12 @@ import androidx.lifecycle.lifecycleScope
 import coil.compose.rememberAsyncImagePainter
 import com.ilya.MeetingMap.SocialMap.ui.theme.robotomedium
 import kotlinx.coroutines.*
+import postRequestAddFriends
 
 
 class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
     var username by mutableStateOf("")
     private var friendsList by mutableStateOf(emptyList<Friend>())
-
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -129,7 +129,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     }
                 }
             }
-
+            
         }
 
     }
@@ -246,6 +246,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
 
     @Composable
     fun FriendsList(friends: List<Friend>) {
+        val key = getUserKey(requireContext())
         SocialMap {
             Box(
                 modifier = Modifier
@@ -260,6 +261,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     .fillMaxWidth()
             ) {
                 items(friends) { friend ->
+                    if(friend.key == key) return@items
                     FriendItem(friend)
                     Spacer(modifier = Modifier.height(20.dp))
                 }
@@ -313,7 +315,11 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     modifier = Modifier
                         .wrapContentHeight()
                         .wrapContentHeight(),
-                    onClick = { /* TODO: Логика для добавления друга */ },
+                    onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            postRequestAddFriends(uid = getUserKey(requireContext()).toString(), key = getUserKey(requireContext()).toString(), friendKey = friend.key)
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(
                         MaterialTheme.colorScheme.primary, // Цвет кнопки
                         contentColor = MaterialTheme.colorScheme.onPrimary // Цвет текста на кнопке
