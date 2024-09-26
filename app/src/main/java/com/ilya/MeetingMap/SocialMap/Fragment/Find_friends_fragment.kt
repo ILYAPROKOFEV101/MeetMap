@@ -146,7 +146,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                 WebSocketFindFriends("wss://meetmap.up.railway.app/findFriends/$uid/$key", this)
             Log.d(
                 "Websocket_friends",
-                "wss://meetmap.up.railway.app/findFriends/findFriends/$uid/$key"
+                "wss://meetmap.up.railway.app/findFriends/$uid/$key"
             )
         }
 
