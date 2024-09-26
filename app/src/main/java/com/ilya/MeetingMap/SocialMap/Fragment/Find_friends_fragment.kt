@@ -84,7 +84,7 @@ import postRequestAddFriends
 
 
 class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
-    var username by mutableStateOf("")
+    private var username by mutableStateOf("")
     private var friendsList by mutableStateOf(emptyList<Friend>())
 
     private val googleAuthUiClient by lazy {

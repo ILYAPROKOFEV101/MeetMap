@@ -13,6 +13,8 @@ suspend fun getMapRoute(startLat: Double, startLon: Double, endLat: Double, endL
     val client = OkHttpClient()
     val url = "https://router.project-osrm.org/route/v1/driving/$startLon,$startLat;$endLon,$endLat?overview=full"
 
+
+
     Log.d("MapRoute", "Запрос к OSRM API: $url")
 
     val request = Request.Builder().url(url).build()
