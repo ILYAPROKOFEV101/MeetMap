@@ -98,6 +98,7 @@ class SocialMapActivity : FragmentActivity() {
     @Composable
     fun FindFriends() {
         var expanded by remember { mutableStateOf(false) }
+        var tapCount by remember { mutableStateOf(0) }  // Переменная для подсчета нажатий
 
         // Анимируем высоту карточки
         val cardHeight by animateDpAsState(
@@ -117,12 +118,19 @@ class SocialMapActivity : FragmentActivity() {
                     modifier = Modifier
                         .height(750.dp)
                         .pointerInteropFilter { event ->
-                            // Перехватываем и обрабатываем касания в Box, чтобы не позволять Fragment забирать все события
+                            // Обрабатываем только два касания, после чего позволяем событиям идти в Fragment
                             if (event.action == MotionEvent.ACTION_DOWN) {
-                                expanded = !expanded
-                                false
+
+                                tapCount += 1
+                                if (tapCount == 2) {
+                                    expanded = !expanded
+                                    tapCount = 0 // Сброс после двух нажатий
+                                    true // Перехватываем второе касание
+                                } else {
+                                    false // Позволяем передать событие фрагменту
+                                }
                             } else {
-                                false
+                                false // Для других событий ничего не делаем
                             }
                         }
                 ) {
@@ -155,6 +163,7 @@ class SocialMapActivity : FragmentActivity() {
             }
         }
     }
+
 
 
 
