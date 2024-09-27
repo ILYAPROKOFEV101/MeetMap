@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-09-27T10:26:44.257195100Z">
+        <DropdownSelection timestamp="2024-09-27T14:47:42.053779Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Ilya\.android\avd\Pixel_7_Pro_API_33.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/ilyaprokofev/.android/avd/Pixel_7_Pro_API_TiramisuPrivacySandbox.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -47,6 +47,9 @@
           </Target>
         </DropdownSelection>
         <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="FindFriends">
+        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
   </component>

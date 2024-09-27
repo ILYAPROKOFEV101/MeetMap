@@ -26,7 +26,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,20 +75,23 @@ class SocialMapActivity : FragmentActivity() {
 
                     val navController = rememberNavController()
 
-                    Column(Modifier.fillMaxSize()) {
-                        FindFriends()
-                           /* NavHost(
+                    Column(Modifier.fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface)
+                    ) {
+
+                           NavHost(
                                 navController = navController,
                                 startDestination = "Friendsearch"
 
                             ) {
                                 composable("Friendsearch") {
-                                    Findfriendsfragment()
+                                    FindFriends()
                                 }
 
-                            }*/
+                            }
                         }
-                    }
+
+            }
         }
 
 
@@ -98,7 +104,7 @@ class SocialMapActivity : FragmentActivity() {
     @Composable
     fun FindFriends() {
         var expanded by remember { mutableStateOf(false) }
-        var tapCount by remember { mutableStateOf(0) }  // Переменная для подсчета нажатий
+        var tapCount by remember { mutableStateOf(0) }
 
         // Анимируем высоту карточки
         val cardHeight by animateDpAsState(
@@ -108,31 +114,19 @@ class SocialMapActivity : FragmentActivity() {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(5.dp)
                 .height(cardHeight)
-                .border(4.dp, Color.Blue, shape = RoundedCornerShape(20.dp))
+                .border(4.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(20.dp)) // Используем цвет из темы
                 .clip(RoundedCornerShape(20.dp))
-                .clickable { expanded = !expanded } // Переключаем состояние при нажатии на карту
+                .clickable { expanded = !expanded }, // Переключаем состояние при нажатии
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer // Цвет контейнера карты
+            )
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
-                        .height(750.dp)
-                        .pointerInteropFilter { event ->
-                            // Обрабатываем только два касания, после чего позволяем событиям идти в Fragment
-                            if (event.action == MotionEvent.ACTION_DOWN) {
-
-                                tapCount += 1
-                                if (tapCount == 2) {
-                                    expanded = !expanded
-                                    tapCount = 0 // Сброс после двух нажатий
-                                    true // Перехватываем второе касание
-                                } else {
-                                    false // Позволяем передать событие фрагменту
-                                }
-                            } else {
-                                false // Для других событий ничего не делаем
-                            }
-                        }
+                        .height(cardHeight - 50.dp)
                 ) {
                     // Фрагмент или его содержимое
                     AndroidView(
@@ -142,7 +136,8 @@ class SocialMapActivity : FragmentActivity() {
                             }
                         },
                         update = { view ->
-                            val fragmentManager = (view.context as FragmentActivity).supportFragmentManager
+                            val fragmentManager =
+                                (view.context as FragmentActivity).supportFragmentManager
                             val fragmentTransaction = fragmentManager.beginTransaction()
                             val findFriendsFragment = Find_friends_fragment()
                             fragmentTransaction.replace(view.id, findFriendsFragment)
@@ -150,15 +145,30 @@ class SocialMapActivity : FragmentActivity() {
                         }
                     )
                 }
-                IconButton(
-                    onClick = { expanded = false }, // Закрываем карточку по нажатию
-                    modifier = Modifier // Иконка закрытия в верхнем правом углу
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close, // Иконка закрытия
-                        contentDescription = "Закрыть",
-                        modifier = Modifier.size(50.dp)
-                    )
+                if (!expanded) {
+                    IconButton(
+                        onClick = { expanded =  !expanded},
+                        modifier = Modifier.align(Alignment.End) // Иконка в правом верхнем углу
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.OpenInFull,
+                            contentDescription = "Открыть",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer, // Цвет иконки
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = { expanded = false },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Закрыть",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer, // Цвет иконки
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
         }
@@ -167,33 +177,6 @@ class SocialMapActivity : FragmentActivity() {
 
 
 
-
-
-    @Composable
-    fun FindFriendsFragment() {
-        AndroidView(
-            factory = { context ->
-                // Создаем FragmentContainerView
-                FragmentContainerView(context).apply {
-                    id = View.generateViewId()
-                }
-            },
-            update = { view ->
-                // Получаем FragmentManager
-                val fragmentManager = (view.context as FragmentActivity).supportFragmentManager
-                // Создаем и добавляем Chatmenu фрагмент
-                val fragmentTransaction = fragmentManager.beginTransaction()
-                val Find_friends_fragment = Find_friends_fragment()
-                fragmentTransaction.replace(view.id, Find_friends_fragment)
-                fragmentTransaction.commit()
-            },
-            modifier = Modifier
-                .pointerInput(Unit) {  // Перехватываем касания
-                    detectTapGestures(onTap = {}) // Пустая обработка касаний
-                }
-        )
-
-    }
 
 
 }
