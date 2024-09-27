@@ -339,4 +339,5 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
             }
         }
     }
+
 }
