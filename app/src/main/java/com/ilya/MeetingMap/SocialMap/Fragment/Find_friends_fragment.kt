@@ -271,6 +271,11 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
 
     @Composable
     fun FriendItem(friend: Friend) {
+        val uid = ID(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -317,7 +322,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                         .wrapContentHeight(),
                     onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
-                            postRequestAddFriends(uid = getUserKey(requireContext()).toString(), key = getUserKey(requireContext()).toString(), friendKey = friend.key)
+                            postRequestAddFriends(uid.toString(), key = getUserKey(requireContext()).toString(), friendKey = friend.key)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
