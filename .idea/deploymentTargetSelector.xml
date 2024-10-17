@@ -49,6 +49,7 @@
         <DialogSelection />
       </SelectionState>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <SelectionState runConfigName="Chat_with_Friends">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2024-09-28T10:31:41.299981400Z">
@@ -69,6 +70,8 @@
       <SelectionState runConfigName="chatmodule">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+=======
+>>>>>>> 5c219d3 (Новая Ссылка)
     </selectionStates>
   </component>
 </project>
