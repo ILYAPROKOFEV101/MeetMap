@@ -20,6 +20,7 @@ import com.ilya.chatmodule.DUO_Chat_Logick.Message
 import com.ilya.chatmodule.DUO_Chat_Logick.MessageCallback
 import com.ilya.chatmodule.DUO_Chat_Logick.MessageProcessor
 import com.ilya.codewithfriends.presentation.profile.ID
+import com.ilya.codewithfriends.presentation.profile.UID
 import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 
@@ -49,6 +50,7 @@ class Find_friends_fragment : Fragment(), MessageCallback {
             return fragment
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -94,12 +96,18 @@ class Find_friends_fragment : Fragment(), MessageCallback {
         val uid = ID(
             userData = googleAuthUiClient.getSignedInUser()
         )
+
+        val name = UID(
+            userData = googleAuthUiClient.getSignedInUser()
+        )
+
+
         val key = getUserKey(requireContext())
 
         if (key != null && uid != null) {
             // Подключение к WebSocket
             val webSocketClient = Duo_chat_SocketClient() // Создание объекта без параметров
-            val webSocketUrl = "wss://meetmap.up.railway.app/chat/" // Замените на свой URL
+            val webSocketUrl = "wss://meetmap.up.railway.app/chat/$roomId?username=$name&key=$key&uid=$uid&lastToken=0" // Замените на свой URL
             val listener = MyWebSocketListener(messageProcessor) // Инициализация слушателя
             webSocketClient.connect(webSocketUrl, listener) // Вызов метода connect с параметрами
         }
