@@ -51,7 +51,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx.v286)
     implementation(libs.androidx.activity.compose)
@@ -64,8 +63,6 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.fragment)
     implementation(libs.androidx.fragment)
-    implementation(project(":app"))
-    implementation(project(":app"))
     implementation(libs.navigation.compose)
     implementation(libs.play.services.auth)
     implementation(libs.androidx.foundation.layout.android)
@@ -79,4 +76,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation (libs.okhttp.v4120)
     implementation (libs.gson)
+    implementation (libs.androidx.localbroadcastmanager)
+    implementation(libs.coil.compose.v250)
+    implementation(libs.coil.compose.v250)
 }

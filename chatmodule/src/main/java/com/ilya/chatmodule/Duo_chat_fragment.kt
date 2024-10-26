@@ -15,28 +15,16 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import com.google.android.gms.auth.api.identity.Identity
-import com.ilya.MeetingMap.SocialMap.ui.theme.SocialMap
 import com.ilya.chatmodule.DUO_Chat_Logick.Message
 import com.ilya.chatmodule.DUO_Chat_Logick.MessageCallback
 import com.ilya.chatmodule.DUO_Chat_Logick.MessageProcessor
-import com.ilya.codewithfriends.presentation.profile.ID
-import com.ilya.codewithfriends.presentation.profile.UID
-import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
-import com.ilya.reaction.logik.PreferenceHelper.getUserKey
-
 
 class Find_friends_fragment : Fragment(), MessageCallback {
     private lateinit var messageProcessor: MessageProcessor
     private lateinit var roomId: String
 
-    private val googleAuthUiClient by lazy {
-        GoogleAuthUiClient(
-            context = requireContext().applicationContext,
-            oneTapClient = Identity.getSignInClient(requireContext().applicationContext)
-        )
-    }
 
-    private lateinit var webSocketFindFriends: WebSocketFindFriends
+
 
     companion object {
         private const val ARG_ROOM_ID = "roomid"
@@ -63,7 +51,7 @@ class Find_friends_fragment : Fragment(), MessageCallback {
         return ComposeView(requireContext()).apply {
 
             setContent {
-                SocialMap {
+
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                     ) {
@@ -74,7 +62,7 @@ class Find_friends_fragment : Fragment(), MessageCallback {
 
                         }
                     }
-                }
+
             }
 
         }
@@ -93,31 +81,19 @@ class Find_friends_fragment : Fragment(), MessageCallback {
 
     override fun onStart() {
         super.onStart()
-        val uid = ID(
-            userData = googleAuthUiClient.getSignedInUser()
-        )
-
-        val name = UID(
-            userData = googleAuthUiClient.getSignedInUser()
-        )
 
 
-        val key = getUserKey(requireContext())
 
-        if (key != null && uid != null) {
             // Подключение к WebSocket
             val webSocketClient = Duo_chat_SocketClient() // Создание объекта без параметров
-            val webSocketUrl = "wss://meetmap.up.railway.app/chat/$roomId?username=$name&key=$key&uid=$uid&lastToken=0" // Замените на свой URL
+            val webSocketUrl = "wss://meetmap.up.railway.app/chat/$roomId?username=name&key=key&uid=uid&lastToken=0" // Замените на свой URL
             val listener = MyWebSocketListener(messageProcessor) // Инициализация слушателя
             webSocketClient.connect(webSocketUrl, listener) // Вызов метода connect с параметрами
-        }
+
     }
 
 
-    override fun onStop() {
-        super.onStop()
-        // Отключаемся от WebSocket, как только фрагмент становится невидимым
-    }
+
 
 
 
