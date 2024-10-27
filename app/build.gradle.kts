@@ -53,7 +53,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -78,6 +77,12 @@ dependencies {
     implementation(libs.firebase.database.ktx)
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.room.common)
+
+
+
+
+
     testImplementation(libs.junit)
 
     implementation(libs.coil.compose) // Coil для загрузки изображений (Compose)
@@ -151,7 +156,12 @@ dependencies {
 
 
 
+    // Room (Entity, Dao, Database)
+    implementation (libs.androidx.room.runtime)
+    annotationProcessor( libs.androidx.room.compiler)
 
+    // Для поддержки корутин в Room
+    implementation (libs.androidx.room.ktx)
 
 
 
