@@ -1,29 +1,38 @@
 package com.ilya.MeetingMap.SocialMap
 
+import FriendDatabase
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
-import android.view.MotionEvent
+import android.util.Log
 import android.view.View
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.OpenInFull
@@ -33,71 +42,231 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
+import androidx.lifecycle.ViewModelProvider
+
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
+
 import com.example.yourapp.ui.Find_friends_fragment
-import com.ilya.MeetingMap.R
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+import com.google.gson.Gson
+import com.ilya.MeetingMap.SocialMap.Friends_Service.Friend
+import com.ilya.MeetingMap.SocialMap.Friends_Service.FriendsViewModel
+import com.ilya.MeetingMap.SocialMap.Friends_Service.WebSocketListenerCallback
+
+
+import com.ilya.MeetingMap.SocialMap.Friends_Service.WebSocketService
+
+
 import com.ilya.MeetingMap.SocialMap.ui.theme.SocialMap
 
-class SocialMapActivity : FragmentActivity() {
+import com.ilya.codewithfriends.presentation.profile.ID
+import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
+import com.ilya.reaction.logik.PreferenceHelper.getUserKey
+
+
+class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
+
+    private val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
+    }
+
+    private lateinit var webSocketService: WebSocketService
+    private val friendsViewModel: FriendsViewModel by viewModels() // Используем ViewModel
+
+    private lateinit var database: FriendDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        try {
+            // Инициализация базы данных
+            database = FriendDatabase.getDatabase(this)
+            // Другой код для инициализации вашего приложения
+        } catch (e: Exception) {
+            Log.e("SocialMapActivity", "Error initializing database: ${e.message}")
+            e.printStackTrace()
+        }
+
+        // Инициализация WebSocketService
+        webSocketService = WebSocketService(this, this)
+
+
+        val uid = ID(userData = googleAuthUiClient.getSignedInUser())
+        val key = getUserKey(this)
+
+        webSocketService.connect(uid.toString(), key.toString())
+
+
+
+
         enableEdgeToEdge()
         setContent {
             SocialMap {
+                val navController = rememberNavController()
 
-                    val navController = rememberNavController()
-
-                    Column(Modifier.fillMaxSize()
+                Column(
+                    Modifier
+                        .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surface)
-                    ) {
-
-                           NavHost(
-                                navController = navController,
-                                startDestination = "Friendsearch"
-
-                            ) {
-                                composable("Friendsearch") {
-                                    FindFriends()
-                                }
-
-                            }
+                ) {
+                    NavHost(navController = navController, startDestination = "Chatmenu") {
+                        composable("Friendsearch") { FindFriends() }
+                        composable("Chatmenu") {
+                            FriendsScreen(friendsViewModel.friendsList)
                         }
-
+                    }
+                }
             }
         }
 
 
-
-
     }
+
+
+
+    override fun onStop() {
+        super.onStop()
+        val intent = Intent(this, WebSocketService::class.java)
+        stopService(intent) // Останавливаем WebSocketService
+    }
+
+
+        // Реализация методов интерфейса для обработки сообщений и ошибок
+        override fun onMessageReceived(message: String) {
+            val listType = object : TypeToken<List<Friend>>() {}.type
+            val newFriendsList: List<Friend> = Gson().fromJson(message, listType)
+
+            // Обновляем данные в ViewModel
+            friendsViewModel.updateFriends(newFriendsList)
+        }
+
+
+    override fun onErrorOccurred(error: String) {
+        // Обработка ошибок
+        println("Error occurred: $error")
+        // Здесь вы можете уведомить пользователя об ошибке
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        webSocketService.closeWebSocket()
+    }
+
+
+
+
+    @Composable
+    fun FriendsScreen(friendsList: List<Friend>) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+
+        ) {
+            items(friendsList) { friend ->
+                FriendItem(friend)
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .padding(start = 70.dp)
+                        .background(Color.Black)
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun FriendItem(friend: Friend) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            shape = RectangleShape // Убираем закругление углов
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+            ) {
+                AsyncImage(
+                    model = friend.img,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+
+                        .align(Alignment.CenterVertically)
+                        .padding(10.dp)
+                        .clip(RoundedCornerShape(30.dp))
+                        .width(60.dp)
+                        .height(60.dp)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Column(
+                    verticalArrangement = Arrangement.Top, // Выравнивание по верхнему краю
+                    modifier = Modifier.fillMaxHeight() // Заставляет Column занять всю доступную высоту
+                ) {
+                    Text(
+                        text = friend.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = friend.lastmessage,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+
+
+                }
+
+            }
+
+        }
+    }
+
+
+
 
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -116,7 +285,11 @@ class SocialMapActivity : FragmentActivity() {
                 .fillMaxWidth()
                 .padding(5.dp)
                 .height(cardHeight)
-                .border(4.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(20.dp)) // Используем цвет из темы
+                .border(
+                    4.dp,
+                    MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(20.dp)
+                ) // Используем цвет из темы
                 .clip(RoundedCornerShape(20.dp))
                 .clickable { expanded = !expanded }, // Переключаем состояние при нажатии
             colors = CardDefaults.cardColors(
@@ -173,6 +346,10 @@ class SocialMapActivity : FragmentActivity() {
             }
         }
     }
+
+
+
+
 
 
 
