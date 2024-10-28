@@ -1,7 +1,9 @@
+package com.ilya.MeetingMap.SocialMap.DataModel
+
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Friend(
+data class FindFriends(
     val key: String,
     val name: String,
     val img: String,

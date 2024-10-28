@@ -1,28 +1,15 @@
-package com.ilya.MeetingMap.SocialMap.Friends_Service
+package com.ilya.MeetingMap.SocialMap.DATAServices
 
-import FriendDB
-import FriendDatabase
-import android.app.Service
 import android.content.Context
-import android.content.Intent
-import android.os.IBinder
 import android.util.Log
-import androidx.room.Room
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import org.json.JSONObject
 
-import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
-import org.json.JSONArray
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 interface WebSocketListenerCallback {
     fun onMessageReceived(message: String)
@@ -34,21 +21,14 @@ class WebSocketService(private val callback: WebSocketListenerCallback, private 
     private var webSocket: WebSocket? = null
     private var uid: String? = null
     private var key: String? = null
-    @Inject
-    lateinit var database: FriendDatabase // Экземпляр базы данных
+
+
 
     companion object {
         private const val TAG = "WebSocketService" // Тег для логов
     }
 
-    init {
-        try {
-            database = FriendDatabase.getDatabase(context)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initializing database: ${e.message}", e)
-            callback.onErrorOccurred("Error initializing database: ${e.message}")
-        }
-    }
+
 
 
     fun connect(uid: String, key: String) {
@@ -58,30 +38,7 @@ class WebSocketService(private val callback: WebSocketListenerCallback, private 
         connectWebSocket()
     }
 
-    private fun saveFriendsToDatabase(friendsJson: String) {
-        try {
-            // Преобразование JSON в список объектов FriendDB
-            val friendsList = parseFriendsJson(friendsJson)
 
-            // Проверка на пустоту списка
-            if (friendsList.isNotEmpty()) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        database.friendDao().insertFriends(friendsList)
-                        Log.d(TAG, "Friends saved to database: ${friendsList.size}")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error saving friends to database: ${e.message}", e)
-                        callback.onErrorOccurred("Error saving friends: ${e.message}")
-                    }
-                }
-            } else {
-                Log.w(TAG, "No friends to save.")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving friends to database: ${e.message}", e)
-            callback.onErrorOccurred("Error saving friends: ${e.message}")
-        }
-    }
 
     private fun connectWebSocket() {
         if (uid == null || key == null) {
@@ -112,7 +69,7 @@ class WebSocketService(private val callback: WebSocketListenerCallback, private 
             override fun onMessage(webSocket: WebSocket, text: String) {
                 Log.d(TAG, "Message received from server: $text")
                 callback.onMessageReceived(text) // Передача сообщения через интерфейс
-                saveFriendsToDatabase(text) // Сохранение друзей в базе данных
+
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -141,33 +98,6 @@ class WebSocketService(private val callback: WebSocketListenerCallback, private 
         } ?: Log.w(TAG, "Attempted to close WebSocket but it was not initialized")
     }
 
-    private fun parseFriendsJson(json: String): List<FriendDB> {
-        val friendsList = mutableListOf<FriendDB>()
-        try {
-            val jsonArray = JSONArray(json)
-            for (i in 0 until jsonArray.length()) {
-                val friendJson = jsonArray.getJSONObject(i)
 
-                val token = friendJson.getString("token")
-                val name = friendJson.getString("name")
-                val img = friendJson.getString("img")
-                val online = friendJson.getBoolean("online")
-
-                // Проверка на наличие поля lastMessage
-                val lastMessage = if (friendJson.has("lastMessage")) {
-                    friendJson.getString("lastMessage")
-                } else {
-                    "No messages" // Установить значение по умолчанию, если поле отсутствует
-                }
-
-                val friend = FriendDB(token, name, img, online, lastMessage)
-                friendsList.add(friend)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing friends JSON: ${e.message}", e)
-            callback.onErrorOccurred("Error parsing JSON: ${e.message}")
-        }
-        return friendsList
-    }
 
 }

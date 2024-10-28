@@ -1,5 +1,6 @@
 import android.util.Log
-import com.ilya.MeetingMap.SocialMap.Find_Frinds_websocket.WebSocketCallback_frinds
+import com.ilya.MeetingMap.SocialMap.DATAServices.Find_Frinds_by_websocket.WebSocketCallback_frinds
+import com.ilya.MeetingMap.SocialMap.DataModel.FindFriends
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -62,10 +63,10 @@ class WebSocketFindFriends(
     private fun parseFriendList(json: String) {
         Log.d("WebSocket_friends", "Парсинг списка друзей")
         val jsonArray = JSONArray(json)
-        val friendsList = mutableListOf<Friend>()
+        val friendsList = mutableListOf<FindFriends>()
         for (i in 0 until jsonArray.length()) {
             val jsonObject = jsonArray.getJSONObject(i)
-            val friend = Friend(
+            val friend = FindFriends(
                 key = jsonObject.getString("key"),
                 name = jsonObject.getString("name"),
                 img = jsonObject.getString("img"),
