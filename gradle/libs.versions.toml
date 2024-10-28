@@ -2,9 +2,11 @@
 agp = "8.3.1"
 androidxLifecycleRuntimeKtx = "2.8.6"
 coilCompose = "2.4.0"
+coilComposeVersion = "2.5.0"
 compiler = "4.13.2"
 converterGson = "2.9.0"
 glide = "4.15.1"
+gson = "2.10.1"
 konfettiXml = "2.0.2"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
@@ -28,6 +30,7 @@ composeBom = "2023.08.00"
 googleServices = "4.4.2"
 firebaseAuth = "23.0.0"
 lifecycleViewmodelCompose = "2.8.6"
+localbroadcastmanager = "1.1.0"
 loggingInterceptor = "4.9.1"
 material3Android = "1.2.1"
 materialVersion = "1.5.0"
@@ -41,6 +44,8 @@ okhttp = "4.11.0"
 okhttpVersion = "4.12.0"
 playServicesLocation = "21.3.0"
 retrofit = "2.9.0"
+roomRuntime = "2.6.1"
+roomCompiler = "2.6.1"
 uiTextGoogleFonts = "1.6.8"
 firebaseCrashlyticsBuildtools = "3.0.2"
 transportRuntime = "3.3.0"
@@ -48,16 +53,29 @@ protoliteWellKnownTypes = "18.0.0"
 firebaseDatabaseKtx = "21.0.0"
 legacySupportV4 = "1.0.0"
 recyclerview = "1.3.0"
+navigationRuntime = "2.7.7"
+fragmentKtx = "1.8.4"
+fragment = "1.5.7"
+navigationComposeVersion = "2.8.2"
+playServicesAuth = "21.2.0"
+foundationLayoutAndroid = "1.7.0-alpha02"
+roomCommon = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx-v286 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycleRuntimeKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelCompose" }
+androidx-localbroadcastmanager = { module = "androidx.localbroadcastmanager:localbroadcastmanager", version.ref = "localbroadcastmanager" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coil-compose-v250 = { module = "io.coil-kt:coil-compose", version.ref = "coilComposeVersion" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -105,6 +123,13 @@ protolite-well-known-types = { group = "com.google.firebase", name = "protolite-
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+androidx-navigation-runtime = { group = "androidx.navigation", name = "navigation-runtime", version.ref = "navigationRuntime" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
+androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeVersion" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
+androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
