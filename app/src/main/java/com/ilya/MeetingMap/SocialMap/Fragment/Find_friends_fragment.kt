@@ -1,12 +1,9 @@
 package com.example.yourapp.ui
 
-import Friend
-import FriendsViewModel
+
+
 import WebSocketFindFriends
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.text.Layout.Alignment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -26,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -45,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +50,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -65,19 +59,15 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 
 import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.material.search.SearchBar
 import com.ilya.MeetingMap.R
-import com.ilya.MeetingMap.SocialMap.Find_Frinds_websocket.WebSocketCallback_frinds
-import com.ilya.MeetingMap.SocialMap.ui.theme.CustomTypography
+import com.ilya.MeetingMap.SocialMap.DATAServices.Find_Frinds_by_websocket.WebSocketCallback_frinds
 import com.ilya.MeetingMap.SocialMap.ui.theme.SocialMap
-import com.ilya.MeetingMap.robotoBold
 import com.ilya.codewithfriends.presentation.profile.ID
 import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import coil.compose.rememberAsyncImagePainter
+import com.ilya.MeetingMap.SocialMap.DataModel.FindFriends
 import com.ilya.MeetingMap.SocialMap.ui.theme.robotomedium
 import kotlinx.coroutines.*
 import postRequestAddFriends
@@ -85,7 +75,7 @@ import postRequestAddFriends
 
 class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
     private var username by mutableStateOf("")
-    private var friendsList by mutableStateOf(emptyList<Friend>())
+    private var friendsList by mutableStateOf(emptyList<FindFriends>())
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -158,7 +148,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
         webSocketFindFriends.stop()
     }
 
-    override fun onFriendListReceived(friends: List<Friend>) {
+    override fun onFriendListReceived(friends: List<FindFriends>) {
         friendsList = friends // Обновляем состояние )
         Log.d("Websocket_friends", friends.toString())
     }
@@ -245,7 +235,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
 
 
     @Composable
-    fun FriendsList(friends: List<Friend>) {
+    fun FriendsList(friends: List<FindFriends>) {
         val key = getUserKey(requireContext())
         SocialMap {
             Box(
@@ -270,7 +260,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
     }
 
     @Composable
-    fun FriendItem(friend: Friend) {
+    fun FriendItem(friend: FindFriends) {
         val uid = ID(
             userData = googleAuthUiClient.getSignedInUser()
         )
