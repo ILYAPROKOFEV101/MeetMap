@@ -60,3 +60,8 @@ class ShakeDetector(
         sensorManager.unregisterListener(this)
     }
 }
+
+
+interface WebSocketCallback {
+    fun onMessageReceived(dataList: List<WebSocketManager.ReceivedData>)
+}

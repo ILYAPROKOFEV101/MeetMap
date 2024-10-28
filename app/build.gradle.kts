@@ -3,7 +3,11 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "1.9.0"
+    id("kotlin-kapt")
+
 }
+
+
 
 android {
     namespace = "com.ilya.MeetingMap"
@@ -156,13 +160,30 @@ dependencies {
 
 
 
-    // Room (Entity, Dao, Database)
-    implementation (libs.androidx.room.runtime)
-    annotationProcessor( libs.androidx.room.compiler)
+    val room_version = "2.6.1"
 
-    // Для поддержки корутин в Room
-    implementation (libs.androidx.room.ktx)
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
 
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:$room_version")
+   
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // optional - RxJava2 support for Room
+    implementation("androidx.room:room-rxjava2:$room_version")
+
+    // optional - RxJava3 support for Room
+    implementation("androidx.room:room-rxjava3:$room_version")
+
+    // optional - Guava support for Room, including Optional and ListenableFuture
+    implementation("androidx.room:room-guava:$room_version")
+
+    // optional - Test helpers
+    testImplementation("androidx.room:room-testing:$room_version")
+    // optional - Paging 3 Integration
+    implementation("androidx.room:room-paging:$room_version")
 
 
 }

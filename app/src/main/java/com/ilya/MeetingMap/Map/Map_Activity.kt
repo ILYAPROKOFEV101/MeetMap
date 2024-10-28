@@ -7,7 +7,6 @@ import MapMarker
 import MarkerAdapter
 import MarkerData
 import SpaceItemDecoration
-import WebSocketCallback
 import WebSocketManager
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -66,6 +65,7 @@ import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
 import com.ilya.MeetingMap.Map.WebSocketClient.WebSocketClient
 import com.ilya.MeetingMap.Map.WebSocketClient.show_friends.show_friends_one
 import com.ilya.MeetingMap.Map.shake_logik.ShakeDetector
+import com.ilya.MeetingMap.Map.shake_logik.WebSocketCallback
 
 
 import com.ilya.MeetingMap.R
@@ -104,7 +104,8 @@ import java.util.concurrent.TimeUnit
 
 
 @OptIn(ExperimentalPermissionsApi::class)
-class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener, GoogleMap.OnMapClickListener, WebSocketCallback {
+class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener, GoogleMap.OnMapClickListener,
+    WebSocketCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient

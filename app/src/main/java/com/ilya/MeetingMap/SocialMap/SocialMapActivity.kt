@@ -72,6 +72,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 
@@ -112,8 +113,13 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
         super.onCreate(savedInstanceState)
 
         try {
-            // Инициализация базы данных
-            database = FriendDatabase.getDatabase(this)
+
+            database = Room.databaseBuilder(
+                applicationContext,
+                FriendDatabase::class.java,
+                "my_database"
+            ).build()
+
             // Другой код для инициализации вашего приложения
         } catch (e: Exception) {
             Log.e("SocialMapActivity", "Error initializing database: ${e.message}")
