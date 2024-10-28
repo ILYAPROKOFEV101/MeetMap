@@ -22,17 +22,20 @@ import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONArray
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 interface WebSocketListenerCallback {
     fun onMessageReceived(message: String)
     fun onErrorOccurred(error: String)
 }
+
 class WebSocketService(private val callback: WebSocketListenerCallback, private val context: Context) {
 
     private var webSocket: WebSocket? = null
     private var uid: String? = null
     private var key: String? = null
-    private lateinit var database: FriendDatabase // Экземпляр базы данных
+    @Inject
+    lateinit var database: FriendDatabase // Экземпляр базы данных
 
     companion object {
         private const val TAG = "WebSocketService" // Тег для логов
@@ -87,7 +90,8 @@ class WebSocketService(private val callback: WebSocketListenerCallback, private 
             return
         }
 
-        val url = "wss://meetmap.up.railway.app/get-friends/$uid/$key"
+            //val url = "wss://meetmap.up.railway.app/get-friends/$uid/$key"
+        val url = "wss://meetmap.up.railway.app/get-friends/NL85HoOb7FVYP8oDsPu1z9oml1o2/6GkAx0f6cJcWCmihMTpTe41IsqFMIV"
         val request = Request.Builder()
             .url(url)
             .build()
