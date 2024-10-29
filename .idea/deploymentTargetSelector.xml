@@ -49,6 +49,9 @@
       </SelectionState>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bdde958e23c0f61d78dea54799e20ed7dcffb5eb
       <SelectionState runConfigName="Chat_with_Friends">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2024-09-28T10:31:41.299981400Z">
@@ -64,7 +67,11 @@
       <SelectionState runConfigName="Chat_with_Friends (1)">
 =======
       <SelectionState runConfigName="FindFriends">
+<<<<<<< HEAD
 >>>>>>> 724272f ( new ui)
+=======
+>>>>>>> 724272f08c589ca1bb11be44bfca6a9df1bde119
+>>>>>>> bdde958e23c0f61d78dea54799e20ed7dcffb5eb
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="chatmodule">
