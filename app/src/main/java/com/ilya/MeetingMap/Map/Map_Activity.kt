@@ -570,7 +570,7 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                         }
                     }
                 }
-            }, 1000) // Задержка в 1 секунду перед выполнением кода
+            }, 200) // Задержка в 0.2 секунду перед выполнением кода
         }
     }
 
