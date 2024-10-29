@@ -1,8 +1,7 @@
 package com.ilya.MeetingMap.Mine_menu
 
 
-import Get_MY_Participant
-import com.ilya.MeetingMap.Map.Server_API.Became_Participant_fun
+import com.ilya.MeetingMap.Map.Server_API.POST.Became_Participant_fun
 import MapMarker
 import MarkerAdapter
 import MarkerData
@@ -59,13 +58,13 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.RoundCap
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.ilya.MeetingMap.Map.Server_API.getMarker
-
-import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
-import com.ilya.MeetingMap.Map.WebSocketClient.WebSocketClient
-import com.ilya.MeetingMap.Map.WebSocketClient.show_friends.show_friends_one
+import com.ilya.MeetingMap.Map.DataModel.Friends_type
+import com.ilya.MeetingMap.Map.Interfaces.WebSocketCallback
+import com.ilya.MeetingMap.Map.Server_API.GET.getPublicMarker
+import com.ilya.MeetingMap.Map.Server_API.WebSocketClient.WebSocketClient
+import com.ilya.MeetingMap.Map.ViewModel.show_friends.show_friends_one
 import com.ilya.MeetingMap.Map.shake_logik.ShakeDetector
-import com.ilya.MeetingMap.Map.shake_logik.WebSocketCallback
+
 
 
 import com.ilya.MeetingMap.R
@@ -83,7 +82,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import markerDataToMapMarker
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -502,7 +500,7 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                         lifecycleScope.launch {
                             while (true) {
                                 try {
-                                    val markers = getMarker(uid_main, LatLng(it.latitude, it.longitude))
+                                    val markers = getPublicMarker(uid_main, LatLng(it.latitude, it.longitude))
                                     markers.forEach { mapMarker ->
                                         val markerLatLng = LatLng(mapMarker.lat, mapMarker.lon)
                                         val marker = addMarker(markerLatLng, mapMarker.name)

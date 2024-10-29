@@ -10,8 +10,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
-import com.ilya.MeetingMap.Map.Server_API.addFriends
-import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
+import com.ilya.MeetingMap.Map.DataModel.Friends_type
+import com.ilya.MeetingMap.Map.Server_API.POST.addFriends
+
 import com.ilya.MeetingMap.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

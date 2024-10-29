@@ -4,66 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-10-28T14:47:02.216284600Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=fc39b267" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection>
-          <targets>
-            <Target type="DEFAULT_BOOT">
-              <handle>
-                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Ilya\.android\avd\Pixel_7_Pro_API_33.avd" />
-              </handle>
-            </Target>
-            <Target type="DEFAULT_BOOT">
-              <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=fc39b267" />
-              </handle>
-            </Target>
-          </targets>
-        </DialogSelection>
       </SelectionState>
-      <SelectionState runConfigName="chatmodule">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-10-22T19:21:03.583127200Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Ilya\.android\avd\Pixel_7_Pro_API_33.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="SocialMapActivity">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <SelectionState runConfigName="Chat_with_Friends">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-09-28T10:31:41.299981400Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Ilya\.android\avd\Pixel_7_Pro_API_33.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="Chat_with_Friends (1)">
-=======
-      <SelectionState runConfigName="FindFriends">
->>>>>>> 724272f ( new ui)
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="chatmodule">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-=======
->>>>>>> 5c219d3 (Новая Ссылка)
     </selectionStates>
   </component>
 </project>

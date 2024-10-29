@@ -5,7 +5,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
+import com.ilya.MeetingMap.Map.DataModel.Friends_type
+
 import com.ilya.MeetingMap.R
 
 class FriendsAdapter(

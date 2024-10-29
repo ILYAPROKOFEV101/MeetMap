@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.ilya.MeetingMap.Map.Server_API.deleteParticipantMarker
+import com.ilya.MeetingMap.Map.Server_API.DELETE.deleteParticipantMarker
 
 import com.ilya.MeetingMap.Mine_menu.Map_Activity
 import com.ilya.MeetingMap.R

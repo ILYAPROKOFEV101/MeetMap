@@ -1,4 +1,4 @@
-package com.ilya.MeetingMap.Map.WebSocketClient.show_friends
+package com.ilya.MeetingMap.Map.ViewModel.show_friends
 
 import android.app.AlertDialog
 import android.content.Context
@@ -14,9 +14,9 @@ import nl.dionsegijn.konfetti.core.models.Shape
 import nl.dionsegijn.konfetti.core.models.Size
 import com.ilya.MeetingMap.R
 import com.bumptech.glide.Glide
-import com.ilya.MeetingMap.Map.Server_API.addFriends
-import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
-import com.ilya.MeetingMap.Mine_menu.Map_Activity
+import com.ilya.MeetingMap.Map.DataModel.Friends_type
+import com.ilya.MeetingMap.Map.Server_API.POST.addFriends
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

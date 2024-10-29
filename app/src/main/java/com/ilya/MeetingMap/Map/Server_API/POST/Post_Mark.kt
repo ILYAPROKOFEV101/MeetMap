@@ -1,25 +1,14 @@
-package com.ilya.MeetingMap.Map.Server_API
+package com.ilya.MeetingMap.Map.Server_API.POST
 
 import MarkerData
 import android.util.Log
+import com.ilya.MeetingMap.Map.Interfaces.Post_Mark
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.Path
-
-interface Post_Mark {
-    @POST("/mark/{uid}/{key}")
-    fun postMarker(
-        @Path("uid") uid: String,
-        @Path("key") key: String,
-        @Body request: MarkerData
-    ): Call<Void>
-}
 
 
 fun postInvite(key: String, uid: String, markerData: MarkerData) {

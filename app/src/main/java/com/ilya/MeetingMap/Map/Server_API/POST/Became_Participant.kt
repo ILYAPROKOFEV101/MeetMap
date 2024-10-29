@@ -1,21 +1,9 @@
-package com.ilya.MeetingMap.Map.Server_API
+package com.ilya.MeetingMap.Map.Server_API.POST
 
 import android.util.Log
-import okhttp3.ResponseBody
-import retrofit2.Response
+import com.ilya.MeetingMap.Map.Interfaces.Became_Participant
 import retrofit2.Retrofit
-import retrofit2.http.POST
-import retrofit2.http.Path
 
-interface Became_Participant {
-
-    @POST("/became/participant/{uid}/{key}/{id}")
-    suspend fun Became_Participant(
-        @Path("uid") uid: String,
-        @Path("key") key: String,
-        @Path("id") id: String
-    ): Response<ResponseBody>  // Возвращаем Response<ResponseBody>
-}
 
 suspend fun Became_Participant_fun(
     uid: String,

@@ -10,8 +10,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
-import com.ilya.MeetingMap.Map.Server_API.addFriends
-import com.ilya.MeetingMap.Map.WebSocketClient.Friends_type
+import com.ilya.MeetingMap.Map.DataModel.Friends_type
+import com.ilya.MeetingMap.Map.Server_API.POST.addFriends
+
 import com.ilya.MeetingMap.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,23 +25,26 @@ import nl.dionsegijn.konfetti.core.models.Size
 import nl.dionsegijn.konfetti.xml.KonfettiView
 import java.util.concurrent.TimeUnit
 
- fun show_friends_third(uid: String,key: String,context: Context, data: List<Friends_type>) {
+ fun show_friends_fourth(uid: String,key: String,context: Context, data: List<Friends_type>) {
     // Inflate the custom layout for the dialog
-    val dialogView = LayoutInflater.from(context).inflate(R.layout.friends_list_three, null)
+    val dialogView = LayoutInflater.from(context).inflate(R.layout.friends_list_fourth,null)
     val konfettiView = dialogView.findViewById<KonfettiView>(R.id.konfettiView)
 
     // Find views inside the custom layout
     val icon_first = dialogView.findViewById<ImageView>(R.id.icon_first)
     val icon_second = dialogView.findViewById<ImageView>(R.id.icon_second)
     val icon_third = dialogView.findViewById<ImageView>(R.id.icon_third)
+    val icon_fourth = dialogView.findViewById<ImageView>(R.id.icon_fourth)
 
     val name_first = dialogView.findViewById<TextView>(R.id.name_first)
     val name_second = dialogView.findViewById<TextView>(R.id.name_second)
-    val name_third = dialogView.findViewById<TextView>(R.id.name_three)
+    val name_third = dialogView.findViewById<TextView>(R.id.name_third)
+    val name_fourth = dialogView.findViewById<TextView>(R.id.name_fourth)
 
     val person_add_first = dialogView.findViewById<Button>(R.id.person_add_first)
     val person_add_second = dialogView.findViewById<Button>(R.id.person_add_second)
-    val person_add_third = dialogView.findViewById<Button>(R.id.person_add_three)
+    val person_add_third = dialogView.findViewById<Button>(R.id.person_add_third)
+    val person_add_fourth = dialogView.findViewById<Button>(R.id.person_add_fourth)
 
     // Set up the button click listeners
     person_add_first.setOnClickListener {
@@ -70,6 +74,17 @@ import java.util.concurrent.TimeUnit
             Toast.makeText(context, "Error: No data or invalid data", Toast.LENGTH_SHORT).show()
         }
     }
+    person_add_fourth.setOnClickListener{
+        if (data.isNotEmpty() && uid != null && key != null) {
+            CoroutineScope(Dispatchers.IO).launch{
+                addFriends(uid, key, data[3].key)
+            }
+        } else {
+            Toast.makeText(context, "Error: No data or invalid data", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
 
     // Handle data population
     when (data.size) {
@@ -109,7 +124,7 @@ import java.util.concurrent.TimeUnit
             name_third.visibility = View.GONE
         }
         3 -> {
-            // Если три пользователя, заполняем все три набора данных
+            // If three friends, populate all three sets of views
             val friend1 = data[0]
             val friend2 = data[1]
             val friend3 = data[2]
@@ -122,18 +137,25 @@ import java.util.concurrent.TimeUnit
 
             name_third.text = friend3.name
             Glide.with(context).load(friend3.img).into(icon_third)
+        }
+        4 -> {
+            // If three friends, populate all three sets of views
+            val friend1 = data[0]
+            val friend2 = data[1]
+            val friend3 = data[2]
+            val friend4 = data[3]
 
-            person_add_first.visibility = View.VISIBLE
-            person_add_second.visibility = View.VISIBLE
-            person_add_third.visibility = View.VISIBLE
+            name_first.text = friend1.name
+            Glide.with(context).load(friend1.img).into(icon_first)
 
-            icon_first.visibility = View.VISIBLE
-            icon_second.visibility = View.VISIBLE
-            icon_third.visibility = View.VISIBLE
+            name_second.text = friend2.name
+            Glide.with(context).load(friend2.img).into(icon_second)
 
-            name_first.visibility = View.VISIBLE
-            name_second.visibility = View.VISIBLE
-            name_third.visibility = View.VISIBLE
+            name_third.text = friend3.name
+            Glide.with(context).load(friend3.img).into(icon_third)
+
+            name_fourth.text = friend4.name
+            Glide.with(context).load(friend4.img).into(icon_fourth)
         }
         else -> {
             // Handle the case where there are more than three friends, if needed

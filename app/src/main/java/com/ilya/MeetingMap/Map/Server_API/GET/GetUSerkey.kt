@@ -1,4 +1,3 @@
-import android.app.VoiceInteractor
 import android.content.Context
 import com.ilya.reaction.logik.PreferenceHelper.setUserKey
 import kotlinx.coroutines.*
@@ -9,7 +8,7 @@ import java.io.IOException
 
 
 // Функция для отправки GET-запроса с использованием OkHttp
-fun sendGetRequest(uid: String, client: OkHttpClient, context: Context) {
+suspend fun sendGetRequest(uid: String, client: OkHttpClient, context: Context) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
             // Создание запроса

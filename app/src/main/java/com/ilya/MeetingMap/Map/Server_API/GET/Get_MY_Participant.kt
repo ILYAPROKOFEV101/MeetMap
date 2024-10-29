@@ -1,27 +1,18 @@
 import android.util.Log
+import com.ilya.MeetingMap.Map.Interfaces.Get_MY_Participant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Path
 import java.io.IOException
 
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 
-// Интерфейс для запросов к API
-interface Get_MY_Participant {
-    @GET("/get/participantmark/{uid}/{key}")
-    suspend fun getParticipant(
-        @Path("uid") uid: String,
-        @Path("key") key: String
-    ): List<MarkerData>
-}
+
 
 // Функция для получения данных участников
 suspend fun getParticipant(uid: String, key: String): List<MarkerData> {

@@ -20,10 +20,10 @@ import okhttp3.*
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.ilya.MeetingMap.Map.shake_logik.WebSocketCallback
+import com.ilya.MeetingMap.Map.Interfaces.WebSocketCallback
+
 import okhttp3.logging.HttpLoggingInterceptor
-class WebSocketManager(private val client: OkHttpClient, private val callback:
-WebSocketCallback?) : WebSocketListener() {
+class WebSocketManager(private val client: OkHttpClient, private val callback: WebSocketCallback?) : WebSocketListener() {
 
     private var webSocket: WebSocket? = null
     var isConnected: Boolean = false

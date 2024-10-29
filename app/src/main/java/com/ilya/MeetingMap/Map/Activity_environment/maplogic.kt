@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.ilya.MeetingMap.Map.Interfaces.NominatimService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -18,7 +19,7 @@ import retrofit2.http.Query
 import java.io.IOException
 import java.util.Locale
 
-    fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
+fun bitmapDescriptorFromVector(context: Context, icon: Any, colorString: String, width: Int, height: Int): BitmapDescriptor {
         when (icon) {
             is Int -> {
                 val vectorDrawable = ContextCompat.getDrawable(context, icon)
@@ -84,56 +85,12 @@ fun getAddressFromLatLon(context: Context, lat: Double, lon: Double): String? {
 }
 
 
-// Data классы для Nominatim API
-data class NominatimResponse(
-    val place_id: String,
-    val lat: String,
-    val lon: String,
-    val display_name: String,
-    val address: Addressnew
-)
-data class Addressnew(
-    val road: String?,       // Название улицы (может быть null)
-    val house_number: String?, // Номер дома (может быть null)
-    val suburb: String?,      // Район (может быть null)
-    val city: String?,        // Город (может быть null)
-    val state: String?,       // Штат/область (может быть null)
-    val country: String?      // Страна (может быть null)
-)
 
 
 
-// Интерфейс для Retrofit
-interface NominatimService {
-    @GET("reverse")
-    suspend fun getAddress(
-        @Query("lat") latitude: Double,
-        @Query("lon") longitude: Double,
-        @Query("format") format: String = "json"
-    ): NominatimResponse
-}
 
 
-suspend fun getAddressFromCoordinates(latitude: Double, longitude: Double): String? {
-    // Создание Retrofit экземпляра
-    val retrofit = Retrofit.Builder()
-        .baseUrl("https://nominatim.openstreetmap.org/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
 
-    // Создание сервиса
-    val service = retrofit.create(NominatimService::class.java)
 
-    return try {
-        // Запрос на получение адреса
-        val response = service.getAddress(latitude, longitude)
-        // Возврат названия улицы, если оно существует
-        response.address.road ?: "Street not found"
-    } catch (e: Exception) {
-        // Логирование ошибки
-        Log.e("NominatimResponse", "Error getting street: ${e.message}", e)
-        null
-    }
-}
 
 

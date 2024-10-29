@@ -1,4 +1,4 @@
-package com.ilya.MeetingMap.Map.WebSocketClient
+package com.ilya.MeetingMap.Map.Server_API.WebSocketClient
 
 import MarkerData
 import android.util.Log
@@ -6,12 +6,7 @@ import com.google.firebase.auth.UserInfo
 import kotlinx.serialization.Serializable
 import okhttp3.WebSocket
 
-@Serializable
-data class Friends_type(
-    val name: String,
-    val img: String,
-    val key: String,
-)
+
 
 sealed class WebSocketResponse {
     data class MarkersResponse(val markers: List<MarkerData>) : WebSocketResponse()
@@ -25,7 +20,8 @@ interface WebSocketCommand {
     fun execute(webSocket: WebSocket)
 }
 
-class GetParticipantMarkCommand(private val uid: String, private val userKey: String) : WebSocketCommand {
+class GetParticipantMarkCommand(private val uid: String, private val userKey: String) :
+    WebSocketCommand {
     override fun execute(webSocket: WebSocket) {
         val command = "get_participant_mark $uid $userKey"
         webSocket.send(command)
@@ -33,7 +29,8 @@ class GetParticipantMarkCommand(private val uid: String, private val userKey: St
     }
 }
 
-class GetMarkCommand(private val uid: String, private val latitude: Double, private val longitude: Double) : WebSocketCommand {
+class GetMarkCommand(private val uid: String, private val latitude: Double, private val longitude: Double) :
+    WebSocketCommand {
     override fun execute(webSocket: WebSocket) {
         val command = "get_mark $uid $latitude $longitude"
         webSocket.send(command)

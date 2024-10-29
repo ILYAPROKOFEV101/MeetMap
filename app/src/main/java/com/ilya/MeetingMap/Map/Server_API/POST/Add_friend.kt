@@ -1,22 +1,12 @@
-package com.ilya.MeetingMap.Map.Server_API
+package com.ilya.MeetingMap.Map.Server_API.POST
 
+import AddFriendsService
 import android.util.Log
-import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.http.POST
-import retrofit2.http.Path
 
-interface AddFriendsService {
-    @POST("/friendrequest/{uid}/{key}/{friend_key}")
-    fun addFriends(
-        @Path("uid") uid: String,
-        @Path("key") key: String,
-        @Path("friend_key") friendKey: String
-    ): Call<Void> // Возвращаем Call<Void>
-}
 
 suspend fun addFriends(uid: String, key: String, friendKey: String) {
     val retrofit = Retrofit.Builder()

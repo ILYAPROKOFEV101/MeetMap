@@ -1,25 +1,13 @@
 import android.util.Log
+import com.ilya.MeetingMap.Map.Interfaces.Post_user_info
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.Path
 
 
-
-interface Post_user_info {
-    @POST("/user/{uid}/{key}")
-    fun postMarker(
-        @Path("uid") uid: String,
-        @Path("key") key: String,
-        @Body request: Post_User_info_data
-    ): Call<Void>
-}
-
-fun post_user_info(key: String, uid: String, name: String, img: String) {
+suspend fun post_user_info(key: String, uid: String, name: String, img: String) {
     try {
         val retrofit = Retrofit.Builder()
             .baseUrl("https://meetmap.up.railway.app/")
