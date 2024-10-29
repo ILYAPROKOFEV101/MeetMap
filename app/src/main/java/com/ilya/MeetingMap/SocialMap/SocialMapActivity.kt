@@ -10,39 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.fillMaxSize
-<<<<<<< HEAD
 import androidx.compose.material3.MaterialTheme
 
-=======
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.OpenInFull
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
->>>>>>> 724272f ( new ui)
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 
@@ -83,7 +52,7 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
     private lateinit var webSocketService: WebSocketService
     private val friendsViewModel: FriendsViewModel by viewModels() // Используем ViewModel
 
-
+    
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,7 +76,6 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
             SocialMap {
                 val navController = rememberNavController()
 
-<<<<<<< HEAD
                 Column(
                     Modifier
                         .fillMaxSize()
@@ -118,103 +86,6 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
                         composable("Chatmenu") {
                             FriendsScreen(friendsViewModel.friendsList)
                         }
-=======
-                    val navController = rememberNavController()
-
-                    Column(Modifier.fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surface)
-                    ) {
-
-                           NavHost(
-                                navController = navController,
-                                startDestination = "Friendsearch"
-
-                            ) {
-                                composable("Friendsearch") {
-                                    FindFriends()
-                                }
-
-                            }
-                        }
-
-            }
-        }
-
-
-
-
-    }
-
-
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
-    @Composable
-    fun FindFriends() {
-        var expanded by remember { mutableStateOf(false) }
-        var tapCount by remember { mutableStateOf(0) }
-
-        // Анимируем высоту карточки
-        val cardHeight by animateDpAsState(
-            targetValue = if (expanded) 800.dp else 200.dp
-        )
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp)
-                .height(cardHeight)
-                .border(4.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(20.dp)) // Используем цвет из темы
-                .clip(RoundedCornerShape(20.dp))
-                .clickable { expanded = !expanded }, // Переключаем состояние при нажатии
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer // Цвет контейнера карты
-            )
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier
-                        .height(cardHeight - 50.dp)
-                ) {
-                    // Фрагмент или его содержимое
-                    AndroidView(
-                        factory = { context ->
-                            FragmentContainerView(context).apply {
-                                id = View.generateViewId()
-                            }
-                        },
-                        update = { view ->
-                            val fragmentManager =
-                                (view.context as FragmentActivity).supportFragmentManager
-                            val fragmentTransaction = fragmentManager.beginTransaction()
-                            val findFriendsFragment = Find_friends_fragment()
-                            fragmentTransaction.replace(view.id, findFriendsFragment)
-                            fragmentTransaction.commit()
-                        }
-                    )
-                }
-                if (!expanded) {
-                    IconButton(
-                        onClick = { expanded =  !expanded},
-                        modifier = Modifier.align(Alignment.End) // Иконка в правом верхнем углу
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.OpenInFull,
-                            contentDescription = "Открыть",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer, // Цвет иконки
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                } else {
-                    IconButton(
-                        onClick = { expanded = false },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Закрыть",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer, // Цвет иконки
-                            modifier = Modifier.size(32.dp)
-                        )
->>>>>>> 724272f ( new ui)
                     }
                 }
             }
@@ -262,7 +133,6 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
 
 
 
-<<<<<<< HEAD
 
 
 
@@ -278,6 +148,4 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
 
 
 
-=======
->>>>>>> 724272f ( new ui)
 }
