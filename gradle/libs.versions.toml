@@ -5,6 +5,7 @@ coilCompose = "2.4.0"
 coilComposeVersion = "2.5.0"
 compiler = "4.13.2"
 converterGson = "2.9.0"
+coreSplashscreen = "1.0.1"
 glide = "4.15.1"
 gson = "2.10.1"
 konfettiXml = "2.0.2"
@@ -63,6 +64,7 @@ roomCommon = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-lifecycle-runtime-ktx-v286 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycleRuntimeKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelCompose" }

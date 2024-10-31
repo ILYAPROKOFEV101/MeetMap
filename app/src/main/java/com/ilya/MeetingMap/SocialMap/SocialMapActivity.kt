@@ -8,16 +8,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.util.TableInfo
 
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
@@ -31,6 +35,7 @@ import com.ilya.MeetingMap.SocialMap.DATAServices.WebSocketListenerCallback
 import com.ilya.MeetingMap.SocialMap.DATAServices.WebSocketService
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FindFriends
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FriendsScreen
+import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.Loop
 
 
 import com.ilya.MeetingMap.SocialMap.ui.theme.SocialMap
@@ -80,18 +85,23 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
                     Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surface)
-                ) {
+                     )
+                 {
                     NavHost(navController = navController, startDestination = "Chatmenu") {
                         composable("Friendsearch") { FindFriends() }
                         composable("Chatmenu") {
+                            Column(Modifier.fillMaxSize())
+                            {
+
+                            Loop()
+
                             FriendsScreen(friendsViewModel.friendsList)
+                        }
                         }
                     }
                 }
             }
         }
-
-
     }
 
 
@@ -102,9 +112,8 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
         stopService(intent) // Останавливаем WebSocketService
     }
 
-
         // Реализация методов интерфейса для обработки сообщений и ошибок
-        override fun onMessageReceived(message: String) {
+    override fun onMessageReceived(message: String) {
             val listType = object : TypeToken<List<Friend>>() {}.type
             val newFriendsList: List<Friend> = Gson().fromJson(message, listType)
 
@@ -114,9 +123,7 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
         }
 
 
-
-
-        override fun onErrorOccurred(error: String) {
+    override fun onErrorOccurred(error: String) {
         // Обработка ошибок
         println("Error occurred: $error")
         // Здесь вы можете уведомить пользователя об ошибке
@@ -127,24 +134,6 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
         super.onDestroy()
         webSocketService.closeWebSocket()
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

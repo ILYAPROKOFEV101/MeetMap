@@ -1,6 +1,7 @@
 package com.ilya.MeetingMap.SocialMap.ui.UI_Layers
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,6 +35,7 @@ import com.ilya.MeetingMap.SocialMap.DataModel.Friend
 
 @Composable
 fun FriendsScreen(friendsList: List<Friend>) {
+    val backgroundColor = if (isSystemInDarkTheme()) Color.Black else colorScheme.primaryContainer
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
 
@@ -44,7 +47,7 @@ fun FriendsScreen(friendsList: List<Friend>) {
                     .fillMaxWidth()
                     .height(1.dp)
                     .padding(start = 70.dp)
-                    .background(Color.Black)
+                    .background(backgroundColor)
             )
         }
     }
@@ -52,12 +55,19 @@ fun FriendsScreen(friendsList: List<Friend>) {
 
 @Composable
 fun FriendItem(friend: Friend) {
+    // Получаем текущую цветовую схему
+    val colorScheme = MaterialTheme.colorScheme
+
+    // Определяем цвета для текста и фона в зависимости от темы
+    val backgroundColor = if (isSystemInDarkTheme()) colorScheme.surface else Color.White
+    val textColor = if (isSystemInDarkTheme()) colorScheme.onSurface else Color.Black
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = backgroundColor
         ),
         shape = RectangleShape // Убираем закругление углов
     ) {
@@ -70,7 +80,6 @@ fun FriendItem(friend: Friend) {
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-
                     .align(Alignment.CenterVertically)
                     .padding(10.dp)
                     .clip(RoundedCornerShape(30.dp))
@@ -87,22 +96,19 @@ fun FriendItem(friend: Friend) {
                 Text(
                     text = friend.name,
                     style = MaterialTheme.typography.bodyLarge,
+                    color = textColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = friend.lastmessage,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    color = textColor.copy(alpha = 0.7f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-
-
-
             }
 
         }
-
     }
 }
