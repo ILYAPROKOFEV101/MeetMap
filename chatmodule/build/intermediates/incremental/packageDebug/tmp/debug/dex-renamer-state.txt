@@ -1,10 +1,10 @@
-#Mon Oct 28 13:05:26 MSK 2024
-base.0=C\:\\MeetMapnew\\chatmodule\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
-base.1=C\:\\MeetMapnew\\chatmodule\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
-base.2=C\:\\MeetMapnew\\chatmodule\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\12\\classes.dex
-base.3=C\:\\MeetMapnew\\chatmodule\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\3\\classes.dex
-base.4=C\:\\MeetMapnew\\chatmodule\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\8\\classes.dex
-base.5=C\:\\MeetMapnew\\chatmodule\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
+#Sat Nov 02 14:08:07 MSK 2024
+base.0=/Users/ilyaprokofev/Documents/MeetMap/chatmodule/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
+base.1=/Users/ilyaprokofev/Documents/MeetMap/chatmodule/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
+base.2=/Users/ilyaprokofev/Documents/MeetMap/chatmodule/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex
+base.3=/Users/ilyaprokofev/Documents/MeetMap/chatmodule/build/intermediates/dex/debug/mergeProjectDexDebug/3/classes.dex
+base.4=/Users/ilyaprokofev/Documents/MeetMap/chatmodule/build/intermediates/dex/debug/mergeProjectDexDebug/8/classes.dex
+base.5=/Users/ilyaprokofev/Documents/MeetMap/chatmodule/build/intermediates/dex/debug/mergeExtDexDebug/classes2.dex
 path.0=classes.dex
 path.1=0/classes.dex
 path.2=12/classes.dex

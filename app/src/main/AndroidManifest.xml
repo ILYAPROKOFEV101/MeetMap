@@ -21,6 +21,7 @@
             android:name=".SocialMap.SocialMapActivity"
             android:exported="false"
             android:label="@string/title_activity_social_map"
+            android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.MeetMap" />
 
         <meta-data
@@ -31,6 +32,7 @@
             android:value="AIzaSyDaF5wvZj3dJFSYTZRx3XH9O_Oz8XsNETs" />
 
         <activity
+            android:configChanges="orientation|screenSize"
             android:name=".Mine_menu.Map_Activity"
             android:exported="false"
             android:label="@string/title_activity_main_menu"

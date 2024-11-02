@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.ilya.chatmodule-mergeDebugResources-2:/values-v21/values-v21.xml",
+            "outputFile": "com.ilya.chatmodule-mergeDebugResources-59:/values-v21/values-v21.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Ilya\\.gradle\\caches\\transforms-3\\dbb434c70840c4748c1408f222444888\\transformed\\core-1.13.1\\res\\values-v21\\values-v21.xml",
+                    "source": "/Users/ilyaprokofev/.gradle/caches/transforms-3/6ecd512dc166822b050abd0f2885239f/transformed/core-1.13.1/res/values-v21/values-v21.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,13",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4",

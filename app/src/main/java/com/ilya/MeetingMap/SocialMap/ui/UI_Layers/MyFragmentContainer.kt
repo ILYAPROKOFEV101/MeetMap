@@ -9,6 +9,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
 import com.example.yourapp.ui.Find_friends_fragment
 
+
+// aункция для вызова , новых
 @Composable
 fun MyFragmentContainer() {
     AndroidView(

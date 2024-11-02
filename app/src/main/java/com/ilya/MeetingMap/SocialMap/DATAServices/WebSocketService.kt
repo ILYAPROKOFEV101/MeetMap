@@ -47,8 +47,8 @@ class WebSocketService(private val callback: WebSocketListenerCallback, private 
             return
         }
 
-            //val url = "wss://meetmap.up.railway.app/get-friends/$uid/$key"
-        val url = "wss://meetmap.up.railway.app/get-friends/NL85HoOb7FVYP8oDsPu1z9oml1o2/6GkAx0f6cJcWCmihMTpTe41IsqFMIV"
+            val url = "wss://meetmap.up.railway.app/get-friends/$uid/$key"
+        //val url = "wss://meetmap.up.railway.app/get-friends/NL85HoOb7FVYP8oDsPu1z9oml1o2/6GkAx0f6cJcWCmihMTpTe41IsqFMIV"
         val request = Request.Builder()
             .url(url)
             .build()

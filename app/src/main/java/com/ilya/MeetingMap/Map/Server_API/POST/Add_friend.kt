@@ -14,6 +14,7 @@ suspend fun addFriends(uid: String, key: String, friendKey: String) {
         .build()
 
     val apiService = retrofit.create(AddFriendsService::class.java)
+    Log.d("AddFriendsService", "https://meetmap.up.railway.app/addFriends/$uid/$key/$friendKey")
 
     apiService.addFriends(uid, key, friendKey).enqueue(object : Callback<Void> {
         override fun onResponse(call: Call<Void>, response: Response<Void>) {

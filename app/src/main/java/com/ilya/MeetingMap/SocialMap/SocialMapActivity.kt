@@ -21,7 +21,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room.util.TableInfo
+
 
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken

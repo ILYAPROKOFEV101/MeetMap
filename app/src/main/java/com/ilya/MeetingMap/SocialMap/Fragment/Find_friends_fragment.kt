@@ -57,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.google.android.gms.auth.api.identity.Identity
@@ -68,6 +69,7 @@ import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
 import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 
 import coil.compose.rememberAsyncImagePainter
+import com.ilya.MeetingMap.Map.Server_API.POST.addFriends
 import com.ilya.MeetingMap.SocialMap.DataModel.FindFriends
 import com.ilya.MeetingMap.SocialMap.ViewModel.FriendsViewModel_data
 import com.ilya.MeetingMap.SocialMap.ui.theme.robotomedium
@@ -76,8 +78,7 @@ import postRequestAddFriends
 
 
 class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
-    private var username by mutableStateOf("")
-    private var friendsList by mutableStateOf(emptyList<FindFriends>())
+
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -87,7 +88,10 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
     }
 
 
-    private val friendsViewModelData: FriendsViewModel_data by viewModels()
+    private val friendsViewModelData: FriendsViewModel_data by lazy {
+        ViewModelProvider(this).get(FriendsViewModel_data::class.java)
+    }
+
 
     private lateinit var webSocketFindFriends: WebSocketFindFriends
     override fun onCreateView(
@@ -115,11 +119,11 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                                     .height(150.dp) // Занимает только необходимое место
                                     .fillMaxWidth()
                             ) {
-                                SearchBar() // Поисковая строка
+                                SearchBar(friendsViewModelData) // Поисковая строка
                             }
 
                             // FriendsList займёт оставшееся пространство
-                            FriendsList(friendsList)
+                            FriendsList(friendsViewModelData.friendsList.value)
                         }
                     }
                 }
@@ -160,11 +164,9 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
 
 
 
-    @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class, DelicateCoroutinesApi::class)
-    @Preview
+    @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class)
     @Composable
-    fun SearchBar() {
-
+    fun SearchBar(viewModel: FriendsViewModel_data) { // Передаем ViewModel в функцию
         val keyboardControllers = LocalSoftwareKeyboardController.current
 
         SocialMap { // Оборачиваем в нашу кастомную тему
@@ -175,11 +177,10 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     .padding(start = 30.dp, end = 30.dp),
             ) {
                 Spacer(modifier = Modifier.height(10.dp))
-                // Текст с кастомным шрифтом и цветом
                 Text(
                     text = stringResource(id = R.string.write_user_name),
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onBackground, // Цвет текста в зависимости от темы
+                    color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Start,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -195,15 +196,17 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                             ),
                             shape = RoundedCornerShape(20.dp)
                         ),
-                    value = username,
-                    onValueChange = { username = it },
+                    value = viewModel.username,
+                    onValueChange = {
+                        viewModel.updateUsername(it)
+                    },
                     textStyle = MaterialTheme.typography.bodyLarge,
                     colors = TextFieldDefaults.textFieldColors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        containerColor = MaterialTheme.colorScheme.surface, // Цвет поверхности
-                        cursorColor = MaterialTheme.colorScheme.onSurface, // Цвет курсора
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface // Цвет текста
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        cursorColor = MaterialTheme.colorScheme.onSurface,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Search,
@@ -212,44 +215,33 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             keyboardControllers?.hide()
-                            webSocketFindFriends.sendCommand("findFriends $username")
+                            webSocketFindFriends.sendCommand("findFriends ${viewModel.username}")
                         }
                     ),
                 )
             }
-
-
         }
 
-
-             
-
-
-        LaunchedEffect(key1 = username) {
+        LaunchedEffect(key1 = viewModel.username) {
             while (isActive) {
-                delay(3000)  // Ждем 5 секунд
-                // Отправляем команду каждые 5 секунд
-                if(username != ""){
-                    webSocketFindFriends.sendCommand("findFriends $username")
+                delay(3000)  // Ждем 3 секунды
+                // Отправляем команду каждые 3 секунды
+                if (viewModel.username.isNotEmpty()) {
+                    webSocketFindFriends.sendCommand("findFriends ${viewModel.username}")
                 }
-
             }
         }
-        //    webSocketFindFriends.sendCommand("findFriends $username")
-
     }
 
     @Composable
-    fun FriendsList(viewModel: FriendsViewModel_data) {
+    fun FriendsList(friends: List<FindFriends>) {
         val key = getUserKey(requireContext())
-        val friends by viewModel.friendsList
         SocialMap {
             Box(
                 modifier = Modifier
                     .wrapContentHeight()
                     .background(MaterialTheme.colorScheme.background) // Цвет зависит от темы
                     .padding(start = 30.dp, end = 30.dp),
-
             )
             LazyColumn(
                 modifier = Modifier
@@ -257,13 +249,14 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     .fillMaxWidth()
             ) {
                 items(friends) { friend ->
-                    if(friend.key == key) return@items
+                    if (friend.key == key) return@items
                     FriendItem(friend)
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
     }
+
 
     @Composable
     fun FriendItem(friend: FindFriends) {
@@ -319,6 +312,7 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
                     onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
                             postRequestAddFriends(uid.toString(), key = getUserKey(requireContext()).toString(), friendKey = friend.key)
+                            addFriends(uid.toString(), key = getUserKey(requireContext()).toString(), friendKey = friend.key)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(

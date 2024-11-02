@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.ilya.chatmodule-mergeDebugResources-2:/values-watch-v20/values-watch-v20.xml",
+            "outputFile": "com.ilya.chatmodule-mergeDebugResources-59:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Ilya\\.gradle\\caches\\transforms-3\\2b4c884648c3cb9614eccc4df1ee109f\\transformed\\play-services-auth-21.2.0\\res\\values-watch-v20\\values.xml",
+                    "source": "/Users/ilyaprokofev/.gradle/caches/transforms-3/a8774dbea8ab489369c817f59576d061/transformed/play-services-auth-21.2.0/res/values-watch-v20/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
                         "startColumns": "0,0,0,0,0,0,0,0",
