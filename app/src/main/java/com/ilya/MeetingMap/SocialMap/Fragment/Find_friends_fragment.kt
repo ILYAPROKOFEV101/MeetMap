@@ -57,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.google.android.gms.auth.api.identity.Identity
 import com.ilya.MeetingMap.R
@@ -68,6 +69,7 @@ import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 
 import coil.compose.rememberAsyncImagePainter
 import com.ilya.MeetingMap.SocialMap.DataModel.FindFriends
+import com.ilya.MeetingMap.SocialMap.ViewModel.FriendsViewModel_data
 import com.ilya.MeetingMap.SocialMap.ui.theme.robotomedium
 import kotlinx.coroutines.*
 import postRequestAddFriends
@@ -83,6 +85,9 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
             oneTapClient = Identity.getSignInClient(requireContext().applicationContext)
         )
     }
+
+
+    private val friendsViewModelData: FriendsViewModel_data by viewModels()
 
     private lateinit var webSocketFindFriends: WebSocketFindFriends
     override fun onCreateView(
@@ -149,16 +154,17 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
     }
 
     override fun onFriendListReceived(friends: List<FindFriends>) {
-        friendsList = friends // Обновляем состояние )
+        friendsViewModelData.updateFriendsList(friends)
         Log.d("Websocket_friends", friends.toString())
     }
 
-    @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class,
-        DelicateCoroutinesApi::class
-    )
+
+
+    @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class, DelicateCoroutinesApi::class)
     @Preview
     @Composable
     fun SearchBar() {
+
         val keyboardControllers = LocalSoftwareKeyboardController.current
 
         SocialMap { // Оборачиваем в нашу кастомную тему
@@ -233,10 +239,10 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
 
     }
 
-
     @Composable
-    fun FriendsList(friends: List<FindFriends>) {
+    fun FriendsList(viewModel: FriendsViewModel_data) {
         val key = getUserKey(requireContext())
+        val friends by viewModel.friendsList
         SocialMap {
             Box(
                 modifier = Modifier

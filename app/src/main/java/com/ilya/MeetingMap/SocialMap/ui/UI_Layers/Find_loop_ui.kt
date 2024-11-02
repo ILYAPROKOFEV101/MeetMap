@@ -40,10 +40,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
 
-@Preview
+
 @Composable
-fun Loop() {
+fun Loop(navController: NavController) {
     val context = LocalContext.current
     val robotoBold = FontFamily(
         Font(R.font.roboto_medium) // Убедитесь, что имя файла правильное и соответствует переименованному файлу
@@ -98,7 +99,7 @@ fun Loop() {
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
                         ) {
-
+                            navController.navigate("Friendsearch")
                         },
                     tint = Color.White
                 )

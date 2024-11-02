@@ -36,6 +36,7 @@ import com.ilya.MeetingMap.SocialMap.DATAServices.WebSocketService
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FindFriends
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FriendsScreen
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.Loop
+import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.MyFragmentContainer
 
 
 import com.ilya.MeetingMap.SocialMap.ui.theme.SocialMap
@@ -88,15 +89,15 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
                      )
                  {
                     NavHost(navController = navController, startDestination = "Chatmenu") {
-                        composable("Friendsearch") { FindFriends() }
+                        composable("Friendsearch") {
+                            MyFragmentContainer()
+                        }
                         composable("Chatmenu") {
                             Column(Modifier.fillMaxSize())
                             {
-
-                            Loop()
-
+                            Loop(navController)
                             FriendsScreen(friendsViewModel.friendsList)
-                        }
+                            }
                         }
                     }
                 }

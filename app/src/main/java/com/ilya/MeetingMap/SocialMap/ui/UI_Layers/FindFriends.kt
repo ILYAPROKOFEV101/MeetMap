@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -42,23 +43,16 @@ fun FindFriends() {
     var expanded by remember { mutableStateOf(false) }
     var tapCount by remember { mutableStateOf(0) }
 
-    // Анимируем высоту карточки
-    val cardHeight by animateDpAsState(
-        targetValue = if (expanded) 800.dp else 200.dp
-    )
+
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp)
-            .height(cardHeight)
-            .border(
-                4.dp,
-                MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(20.dp)
-            ) // Используем цвет из темы
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { expanded = !expanded }, // Переключаем состояние при нажатии
+            .fillMaxSize()
+
+            .clip(RoundedCornerShape(20.dp)),
+
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer // Цвет контейнера карты
         )
@@ -66,24 +60,10 @@ fun FindFriends() {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
-                    .height(cardHeight - 50.dp)
+                    .wrapContentHeight()
             ) {
                 // Фрагмент или его содержимое
-                AndroidView(
-                    factory = { context ->
-                        FragmentContainerView(context).apply {
-                            id = View.generateViewId()
-                        }
-                    },
-                    update = { view ->
-                        val fragmentManager =
-                            (view.context as FragmentActivity).supportFragmentManager
-                        val fragmentTransaction = fragmentManager.beginTransaction()
-                        val findFriendsFragment = Find_friends_fragment()
-                        fragmentTransaction.replace(view.id, findFriendsFragment)
-                        fragmentTransaction.commit()
-                    }
-                )
+
             }
             if (!expanded) {
                 IconButton(
