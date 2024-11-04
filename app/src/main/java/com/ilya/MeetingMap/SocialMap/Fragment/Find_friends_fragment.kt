@@ -162,8 +162,6 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
         Log.d("Websocket_friends", friends.toString())
     }
 
-
-
     @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class)
     @Composable
     fun SearchBar(viewModel: FriendsViewModel_data) { // Передаем ViewModel в функцию

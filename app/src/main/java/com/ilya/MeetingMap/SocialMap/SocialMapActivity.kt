@@ -33,6 +33,7 @@ import com.ilya.MeetingMap.SocialMap.DATAServices.WebSocketListenerCallback
 
 
 import com.ilya.MeetingMap.SocialMap.DATAServices.WebSocketService
+import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.Chat_fragment
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FindFriends
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FriendsScreen
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.Loop
@@ -96,8 +97,11 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback {
                             Column(Modifier.fillMaxSize())
                             {
                             Loop(navController)
-                            FriendsScreen(friendsViewModel.friendsList)
+                            FriendsScreen(friendsViewModel.friendsList, navController)
                             }
+                        }
+                        composable("Chat"){
+                            Chat_fragment()
                         }
                     }
                 }

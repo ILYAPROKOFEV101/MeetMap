@@ -1,6 +1,8 @@
 package com.ilya.MeetingMap.SocialMap.ui.UI_Layers
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,19 +32,20 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.ilya.MeetingMap.SocialMap.DataModel.Friend
 
 
 @Composable
-fun FriendsScreen(friendsList: List<Friend>) {
+fun FriendsScreen(friendsList: List<Friend>, navController: NavController) {
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else colorScheme.primaryContainer
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
 
         ) {
         items(friendsList) { friend ->
-            FriendItem(friend)
+            FriendItem(friend, navController)
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -54,7 +58,7 @@ fun FriendsScreen(friendsList: List<Friend>) {
 }
 
 @Composable
-fun FriendItem(friend: Friend) {
+fun FriendItem(friend: Friend, navController: NavController) {
     // Получаем текущую цветовую схему
     val colorScheme = MaterialTheme.colorScheme
 
@@ -65,10 +69,17 @@ fun FriendItem(friend: Friend) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp),
+            .height(80.dp)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                navController.navigate("Chat")
+            },
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),
+
         shape = RectangleShape // Убираем закругление углов
     ) {
         Row(

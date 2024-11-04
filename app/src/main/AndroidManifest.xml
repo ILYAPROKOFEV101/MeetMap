@@ -51,7 +51,9 @@
             </intent-filter>
         </activity>
 
-
+        <service
+            android:name=".SocialMap.DATAServices.Chat_Service.ChatWebSocketService"
+            android:exported="false" />
 
 
     </application>

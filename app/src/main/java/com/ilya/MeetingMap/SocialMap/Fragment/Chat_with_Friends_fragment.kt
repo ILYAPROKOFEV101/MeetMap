@@ -26,9 +26,13 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import coil.compose.rememberAsyncImagePainter
 
 import com.google.android.gms.auth.api.identity.Identity
+import com.ilya.MeetingMap.SocialMap.ViewModel.ChatViewModel
+import com.ilya.MeetingMap.SocialMap.ViewModel.FriendsViewModel_data
+import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.ChatScreen
 import com.ilya.MeetingMap.SocialMap.ui.theme.SocialMap
 import com.ilya.codewithfriends.presentation.profile.ID
 import com.ilya.codewithfriends.presentation.sign_in.GoogleAuthUiClient
@@ -37,6 +41,10 @@ import com.ilya.reaction.logik.PreferenceHelper.getUserKey
 
 class Chat_with_Friends_fragment : Fragment() {
 
+    private val chatViewModel: ChatViewModel by lazy {
+        ViewModelProvider(this).get(ChatViewModel::class.java)
+    }
+
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = requireContext().applicationContext,
@@ -44,107 +52,35 @@ class Chat_with_Friends_fragment : Fragment() {
         )
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
-
+    ): View {
         return ComposeView(requireContext()).apply {
-
             setContent {
                 SocialMap {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        ChatScreen(
+                            chatViewModel = chatViewModel
+                        )
                     }
                 }
             }
-            
-        }
-
-    }
-
-
-    @Composable
-    @Preview
-    fun Chat_with_Friends()
-    {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-        )
-        {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(0.2f)
-            )
-            {
-                Image(
-                    painter = rememberAsyncImagePainter(""),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(RoundedCornerShape(90.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            Column(
-                Modifier
-                    .fillMaxHeight()
-                    .weight(0.7f)
-            )
-            {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.3f)
-                )
-                {
-                    Text(text = "")
-                }
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.7f)
-                )
-                {
-                    Text(text = "")
-                }
-
-            }
-
-            Column(modifier = Modifier.fillMaxHeight().weight(0.1f)) {
-
-            }
         }
     }
-
 
     override fun onStart() {
         super.onStart()
-        val uid = ID(
-            userData = googleAuthUiClient.getSignedInUser()
-        )
+        // Проверка авторизации и установка UID
+        val uid = ID(userData = googleAuthUiClient.getSignedInUser())
         val key = getUserKey(requireContext())
-
-
+        chatViewModel.connectToChat("cnyFlmsAIp4IJPy", uid.toString(), key.toString())
     }
 
     override fun onStop() {
         super.onStop()
-
+        chatViewModel.disconnectFromChat()
     }
-
-
-
-
 }
+
