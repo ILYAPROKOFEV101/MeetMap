@@ -5,10 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Messages(
-    val content: String,
-    val imageUrl: String,
-    val key: String,
-    val messageTime: Long,
-    val senderUsername: String,
-    val timestamp: Long
+    val content: String? = null,
+    val imageUrl: String? = null,
+    val messageTime: Long? = null,
+    val senderUsername: String? = null,
+    val timestamp: Long? = null
 )

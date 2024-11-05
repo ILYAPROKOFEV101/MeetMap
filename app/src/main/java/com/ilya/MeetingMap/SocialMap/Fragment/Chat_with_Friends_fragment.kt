@@ -1,5 +1,6 @@
 package com.example.yourapp.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider
 import coil.compose.rememberAsyncImagePainter
 
 import com.google.android.gms.auth.api.identity.Identity
+import com.ilya.MeetingMap.SocialMap.DATAServices.Chat_Service.ChatWebSocketService
 import com.ilya.MeetingMap.SocialMap.ViewModel.ChatViewModel
 import com.ilya.MeetingMap.SocialMap.ViewModel.FriendsViewModel_data
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.ChatScreen
@@ -72,7 +74,9 @@ class Chat_with_Friends_fragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        // Проверка авторизации и установка UID
+        // Запуск сервиса для WebSocket
+        requireContext().startService(Intent(requireContext(), ChatWebSocketService::class.java))
+
         val uid = ID(userData = googleAuthUiClient.getSignedInUser())
         val key = getUserKey(requireContext())
         chatViewModel.connectToChat("cnyFlmsAIp4IJPy", uid.toString(), key.toString())
@@ -80,6 +84,7 @@ class Chat_with_Friends_fragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
+        requireContext().stopService(Intent(requireContext(), ChatWebSocketService::class.java))
         chatViewModel.disconnectFromChat()
     }
 }

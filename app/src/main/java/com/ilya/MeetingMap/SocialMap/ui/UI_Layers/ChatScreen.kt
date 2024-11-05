@@ -1,6 +1,7 @@
 package com.ilya.MeetingMap.SocialMap.ui.UI_Layers
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.ilya.MeetingMap.SocialMap.DataModel.Messages
 import com.ilya.MeetingMap.SocialMap.ViewModel.ChatViewModel
 
 @Composable
@@ -22,7 +24,7 @@ fun ChatScreen(chatViewModel: ChatViewModel) {
 
     Column {
         // Отображаем список сообщений
-        LazyColumn {
+        LazyColumn(modifier = Modifier.fillMaxSize(0.8f)) {
             items(messages) { message ->
                 MessageItem(message = message)
             }
@@ -49,9 +51,9 @@ fun ChatScreen(chatViewModel: ChatViewModel) {
 }
 
 @Composable
-fun MessageItem(message: String) {
+fun MessageItem(message: Messages) {
     Column {
-        Text(text = message)
-
+        Text(text = "${message.senderUsername}: ${message.content}")
+        // Если нужно, добавьте изображение или другие элементы
     }
 }
