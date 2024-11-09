@@ -74,10 +74,10 @@ class Chat_with_Friends_fragment : Fragment() {
 
                 SocialMap {
                     Surface(modifier = Modifier.fillMaxSize()) {
-                        /*ChatScreen(
+                        ChatScreen(
                                 chatViewModel = chatViewModel
-                                )*/
-                        MessageList(chatViewModel = chatViewModel, username = name.toString(), my_avatar = img.toString(), my_key = key.toString())
+                                )
+                       // MessageList(chatViewModel = chatViewModel, username = name.toString(), my_avatar = img.toString(), my_key = key.toString())
                     }
                 }
             }

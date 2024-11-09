@@ -29,7 +29,7 @@ class ChatWebSocketService : Service() {
     // Определяем session как глобальную переменную
     var open_session: WebSocketSession? = null
         private set // Ограничиваем доступ на изменение снаружи
-
+    
     // Логирование для отладки
     private val TAG = "ChatWebSocketService"
 

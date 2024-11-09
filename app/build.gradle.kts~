@@ -83,8 +83,7 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.room.common)
     implementation (libs.androidx.fragment.ktx.v185)
-    implementation(libs.foundation.layout.android)
-    implementation(libs.androidx.ui.test.android) // Убедитесь, что версия соответствует последней
+    implementation(libs.foundation.layout.android) // Убедитесь, что версия соответствует последней
 
 
 

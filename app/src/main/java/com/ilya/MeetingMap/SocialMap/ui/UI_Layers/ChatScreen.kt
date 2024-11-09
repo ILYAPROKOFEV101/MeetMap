@@ -1,4 +1,5 @@
 package com.ilya.MeetingMap.SocialMap.ui.UI_Layers
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,7 +22,9 @@ import com.ilya.MeetingMap.SocialMap.ViewModel.ChatViewModel
 @Composable
 fun ChatScreen(chatViewModel: ChatViewModel) {
     val messages by chatViewModel.messages.collectAsState()
+     val TAG = "ChatWebSocketService"
 
+        Log.d(TAG, "Received messages: $messages")
     Column {
         // Отображаем список сообщений
         LazyColumn(modifier = Modifier.fillMaxSize(0.8f)) {

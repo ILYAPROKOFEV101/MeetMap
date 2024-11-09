@@ -29,7 +29,7 @@ class ChatViewModel : ViewModel() {
 
     fun sendMessage(content: String) {
 
-        chatService.sendMessage(Json.encodeToString(content)) // Используйте kotlinx.serialization для преобразования в JSON
+        chatService.sendMessage(content) // Используйте kotlinx.serialization для преобразования в JSON
     }
 
     fun disconnectFromChat() {
