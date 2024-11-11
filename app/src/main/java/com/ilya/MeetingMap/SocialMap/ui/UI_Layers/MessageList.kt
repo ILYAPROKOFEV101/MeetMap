@@ -1,9 +1,12 @@
 package com.ilya.MeetingMap.SocialMap.ui.UI_Layers
 
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -79,16 +82,15 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun MessageList(chatViewModel: ChatViewModel, username: String, my_avatar: String, my_key: String) {
-    val messages by chatViewModel.messages.collectAsState()
-    val My_message_color = if (isSystemInDarkTheme()) Color(0xFF315ff3)
-    else Color(0xFF2315FF3)
-    val Notmy_message_color = if (isSystemInDarkTheme()) Color(0xFFFFFFFF)
-    else Color(0xFF2315FF3)
-    val background_color = if (isSystemInDarkTheme()) Color(0xFF191C20) else Color(0xFFFFFFFF)
 
+
+
+    val messages by chatViewModel.messages.collectAsState()
+    val My_message_color = if (isSystemInDarkTheme()) Color(0xFF315ff3) else Color(0xFF2315FF3)
+    val Notmy_message_color = if (isSystemInDarkTheme()) Color(0xFFFFFFFF) else Color(0xFF2315FF3)
+    val background_color = if (isSystemInDarkTheme()) Color(0xFF191C20) else Color(0xFFFFFFFF)
 
     Log.d("MessageList", "Number of messages: ${messages.size}")
     val listState = rememberLazyListState()
@@ -96,7 +98,7 @@ fun MessageList(chatViewModel: ChatViewModel, username: String, my_avatar: Strin
 
     val painter = rememberAsyncImagePainter(model = my_avatar)
 
-    // LaunchedEffect для прокрутки к последнему сообщению, если оно добавляется
+    // LaunchedEffect для прокрутки к последнему сообщению
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             val lastVisibleItemIndex = messages.size - 1
@@ -104,12 +106,17 @@ fun MessageList(chatViewModel: ChatViewModel, username: String, my_avatar: Strin
             hasScrolled.value = true
         }
     }
-    Column(Modifier.fillMaxSize()) {
 
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(background_color)
+    ) {
+        // Список сообщений
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
+                .weight(1f),  // Расширяет LazyColumn, чтобы занять все доступное пространство
             reverseLayout = false,
             state = listState,
         ) {
@@ -118,12 +125,10 @@ fun MessageList(chatViewModel: ChatViewModel, username: String, my_avatar: Strin
                 MessageCard(message, my_key, painter, username)
             }
         }
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.2f))
-        {
-            Material_text_filed()
-        }
+        Spacer(modifier = Modifier.height(10.dp))  // Пробел перед текстовым полем
+
+        // Поле ввода сообщения, закрепленное внизу
+        Material_text_filed(chatViewModel)
     }
 }
 
@@ -132,7 +137,7 @@ fun MessageCard(message: Messages, my_key: String, my_avatar: Painter, username:
     val My_message_color = if (isSystemInDarkTheme()) Color(0xFF315ff3) else Color(0xFF2315FF3)
     val Notmy_message_color = if (isSystemInDarkTheme()) Color(0xFFFFFFFF)
     else Color(0xFF303133)
-    val painter = rememberAsyncImagePainter(model = message.imageUrl)
+    val painter = rememberAsyncImagePainter(model = message.profilerIMG)
     val height by remember { mutableStateOf(60.dp) }
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val isMyMessage = message.key == my_key
@@ -221,10 +226,10 @@ fun MessageCard(message: Messages, my_key: String, my_avatar: Painter, username:
         }
     }
 
-@Preview
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Material_text_filed(){
+fun Material_text_filed(chatViewModel: ChatViewModel){
     var text by remember { mutableStateOf("") }
     Row(
         Modifier
@@ -262,7 +267,9 @@ fun Material_text_filed(){
             modifier = Modifier
                 .weight(0.1f)
                 .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
-            onClick = {}
+            onClick = {
+                chatViewModel.sendMessage(text.toString())
+            }
         ) {
                 Icon(
                     imageVector = Icons.Default.Send,
