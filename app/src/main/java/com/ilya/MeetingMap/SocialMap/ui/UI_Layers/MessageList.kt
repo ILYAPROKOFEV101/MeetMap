@@ -33,11 +33,18 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 
 import androidx.compose.runtime.collectAsState
@@ -58,6 +65,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.ilya.MeetingMap.R
@@ -81,6 +89,7 @@ fun MessageList(chatViewModel: ChatViewModel, username: String, my_avatar: Strin
     else Color(0xFF2315FF3)
     val background_color = if (isSystemInDarkTheme()) Color(0xFF191C20) else Color(0xFFFFFFFF)
 
+
     Log.d("MessageList", "Number of messages: ${messages.size}")
     val listState = rememberLazyListState()
     val hasScrolled = rememberSaveable { mutableStateOf(false) }
@@ -95,16 +104,25 @@ fun MessageList(chatViewModel: ChatViewModel, username: String, my_avatar: Strin
             hasScrolled.value = true
         }
     }
+    Column(Modifier.fillMaxSize()) {
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-        reverseLayout = false,
-        state = listState
-    ) {
-        items(messages) { message ->
-            Spacer(modifier = Modifier.height(10.dp))
-            MessageCard(message, my_key, painter, username)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            reverseLayout = false,
+            state = listState,
+        ) {
+            items(messages) { message ->
+                Spacer(modifier = Modifier.height(10.dp))
+                MessageCard(message, my_key, painter, username)
+            }
+        }
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.2f))
+        {
+            Material_text_filed()
         }
     }
 }
@@ -166,6 +184,7 @@ fun MessageCard(message: Messages, my_key: String, my_avatar: Painter, username:
                         text = message.content.toString(),
                         textAlign = TextAlign.Start,
                         fontSize = 18.sp,
+                        fontFamily = font,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isMyMessage) Color(0xFFFFFFFF) else Color(
                             0xFF1B1B1B
@@ -202,3 +221,53 @@ fun MessageCard(message: Messages, my_key: String, my_avatar: Painter, username:
         }
     }
 
+@Preview
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Material_text_filed(){
+    var text by remember { mutableStateOf("") }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(60.dp))
+    {
+        IconButton(
+            modifier = Modifier
+                .weight(0.1f)
+                .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
+            onClick = {}
+        ) {
+                Icon(
+                    imageVector = Icons.Default.AddPhotoAlternate,
+                    contentDescription = "Send"
+                )
+            }
+
+        TextField(
+            value = text,
+            onValueChange = { text = it },
+            modifier = Modifier
+                .weight(0.7f)
+                .height(80.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                focusedIndicatorColor = Color.White, // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
+                unfocusedIndicatorColor = Color.White, // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
+                disabledIndicatorColor = Color.White, // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
+                containerColor = Color.White
+            ),
+            maxLines = 10,
+
+        )
+        IconButton(
+            modifier = Modifier
+                .weight(0.1f)
+                .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
+            onClick = {}
+        ) {
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = "Send"
+                )
+            }
+    }
+}
