@@ -84,7 +84,8 @@ fun FriendItem(friend: Friend, navController: NavController) {
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ) {
-
+                // Сохраняем токен в провайдер
+                tokenProvider.setFriendToken(friend.token)
                 Log.d("Save_token", "сохраняю токен: ${friend.token}")
 
                 // Передаем токен в слушатель

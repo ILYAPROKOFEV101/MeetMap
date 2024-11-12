@@ -57,7 +57,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -94,7 +93,9 @@ class Find_friends_fragment : Fragment(), WebSocketCallback_frinds {
         ViewModelProvider(this).get(FriendsViewModel_data::class.java)
     }
 
-    private val friendsViewModel: FriendsViewModel by viewModels()
+    private val friendsViewModel: FriendsViewModel by lazy {
+        ViewModelProvider(this).get(FriendsViewModel ::class.java)
+    }
 
 
     private lateinit var webSocketFindFriends: WebSocketFindFriends

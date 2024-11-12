@@ -3,6 +3,7 @@ package com.example.yourapp.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,12 +29,16 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import coil.compose.rememberAsyncImagePainter
 
 import com.google.android.gms.auth.api.identity.Identity
 import com.ilya.MeetingMap.SocialMap.DATAServices.Chat_Service.ChatWebSocketService
+import com.ilya.MeetingMap.SocialMap.Interface.DataListener
 import com.ilya.MeetingMap.SocialMap.ViewModel.ChatViewModel
+import com.ilya.MeetingMap.SocialMap.ViewModel.FriendsViewModel
 import com.ilya.MeetingMap.SocialMap.ViewModel.FriendsViewModel_data
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.ChatScreen
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.MessageList
@@ -50,6 +55,10 @@ class Chat_with_Friends_fragment : Fragment() {
     private val chatViewModel: ChatViewModel by lazy {
         ViewModelProvider(this).get(ChatViewModel::class.java)
     }
+
+    private val friendsViewModel: FriendsViewModel by viewModels()
+
+
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -84,14 +93,23 @@ class Chat_with_Friends_fragment : Fragment() {
         }
     }
 
+
+
     override fun onStart() {
         super.onStart()
         // Запуск сервиса для WebSocket
         requireContext().startService(Intent(requireContext(), ChatWebSocketService::class.java))
-
+        val dataListener = object : DataListener {
+            override fun onDataReceived(data: String) {
+                // Обрабатываем полученные данные (например, сохраняем в базе данных или UI)
+                Log.d("DataListener", "Получены данные: $data")
+            }
+        }
+        val token = friendsViewModel.getFriendToken()
+        Log.d("Save_token", "получаю " + dataListener)
         val uid = ID(userData = googleAuthUiClient.getSignedInUser())
         val key = getUserKey(requireContext())
-        chatViewModel.connectToChat("cnyFlmsAIp4IJPy", uid.toString(), key.toString())
+        chatViewModel.connectToChat(token.toString(), uid.toString(), key.toString())
     }
 
     override fun onStop() {

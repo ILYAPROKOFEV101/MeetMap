@@ -34,7 +34,7 @@ import com.ilya.MeetingMap.SocialMap.DATAServices.WebSocketListenerCallback
 
 
 import com.ilya.MeetingMap.SocialMap.DATAServices.WebSocketService
-
+import com.ilya.MeetingMap.SocialMap.Interface.FriendTokenProvider
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.Chat_fragment
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FindFriends
 import com.ilya.MeetingMap.SocialMap.ui.UI_Layers.FriendsScreen

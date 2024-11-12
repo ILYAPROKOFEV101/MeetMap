@@ -16,6 +16,9 @@ import kotlinx.coroutines.launch
 class FriendsViewModel : ViewModel() {
     val friendsList = mutableStateListOf<Friend>() // Используем для хранения друзей
 
+    // Переменная для хранения ключа
+    private var friendToken: String? = null
+
     // Функция для обновления данных друзей
     fun updateFriends(newFriends: List<Friend>) {
         viewModelScope.launch(Dispatchers.Main) {
@@ -24,5 +27,13 @@ class FriendsViewModel : ViewModel() {
         }
     }
 
+    // Метод для установки ключа
+    fun setFriendToken(key: String) {
+        friendToken = key
+    }
 
+    // Метод для получения ключа
+    fun getFriendToken(): String? {
+        return friendToken
+    }
 }
