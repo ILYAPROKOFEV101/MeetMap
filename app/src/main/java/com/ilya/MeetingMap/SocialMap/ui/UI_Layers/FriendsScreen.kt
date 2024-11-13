@@ -38,20 +38,21 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.api.Context
 import com.ilya.MeetingMap.SocialMap.DataModel.Friend
-import com.ilya.MeetingMap.SocialMap.Interface.DataListener
+import com.ilya.MeetingMap.SocialMap.Interface.MyDataProvider
+
 
 import com.ilya.MeetingMap.SocialMap.ViewModel.FriendsViewModel
 
 
 @Composable
-fun FriendsScreen(friendsList: List<Friend>, navController: NavController) {
+fun FriendsScreen(friendsList: List<Friend>, navController: NavController, context: android.content.Context) {
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else colorScheme.primaryContainer
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
 
         ) {
         items(friendsList) { friend ->
-            FriendItem(friend, navController)
+            FriendItem(friend, navController, context)
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -64,8 +65,8 @@ fun FriendsScreen(friendsList: List<Friend>, navController: NavController) {
 }
 
 @Composable
-fun FriendItem(friend: Friend, navController: NavController) {
-   lateinit var dataListener : DataListener
+fun FriendItem(friend: Friend, navController: NavController, context: android.content.Context) {
+
 
     // Получаем текущую цветовую схему
     val colorScheme = MaterialTheme.colorScheme
@@ -87,8 +88,8 @@ fun FriendItem(friend: Friend, navController: NavController) {
 
                 Log.d("Save_token", "сохраняю токен: ${friend.token}")
 
-                // Передаем токен в слушатель
-                dataListener.onDataReceived(friend.token)
+                val dataProvider = MyDataProvider(context)
+                dataProvider.saveToken(friend.token) // Store the token
 
                 // Переход к чату
                 navController.navigate("Chat")

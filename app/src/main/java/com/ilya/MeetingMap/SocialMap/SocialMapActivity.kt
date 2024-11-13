@@ -99,7 +99,7 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback{
                             Column(Modifier.fillMaxSize())
                             {
                             Loop(navController)
-                            FriendsScreen(friendsViewModel.friendsList, navController)
+                            FriendsScreen(friendsViewModel.friendsList, navController, this@SocialMapActivity)
                             }
                         }
                         composable("Chat"){

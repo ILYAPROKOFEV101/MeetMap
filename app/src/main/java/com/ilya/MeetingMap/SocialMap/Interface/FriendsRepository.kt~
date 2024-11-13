@@ -1,3 +1,28 @@
 package com.ilya.MeetingMap.SocialMap.Interface
 
-interface DataLis
+import android.content.Context
+
+// 1. Modify the interface
+interface DataProvider {
+    fun saveToken(token: String)
+    fun getToken(): String?
+}
+
+class MyDataProvider(context: Context) : DataProvider {
+    private val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+
+    private var token: String? = null // Store the token in memory
+
+    override fun saveToken(token: String) {
+        this.token = token // Update the in-memory token
+        sharedPreferences.edit().putString("token", token).apply() // Save to SharedPreferences
+    }
+
+    override fun getToken(): String? {
+        sharedPreferences.edit().get("token", token).apply()
+        return token // Return the in-memory token
+    }
+
+    // ... other methods ...
+}
+
