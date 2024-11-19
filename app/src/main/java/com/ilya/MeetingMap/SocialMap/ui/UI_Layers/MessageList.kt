@@ -1,9 +1,17 @@
 package com.ilya.MeetingMap.SocialMap.ui.UI_Layers
 
+import android.app.Activity
+import android.content.ContentResolver
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,6 +39,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,7 +47,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -49,6 +60,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ComposeCompilerApi
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,9 +71,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -76,6 +90,7 @@ import com.ilya.MeetingMap.SocialMap.DataModel.Messages
 import com.ilya.MeetingMap.SocialMap.ViewModel.ChatViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -229,24 +244,51 @@ fun MessageCard(message: Messages, my_key: String, my_avatar: Painter, username:
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Material_text_filed(chatViewModel: ChatViewModel){
+fun Material_text_filed(chatViewModel: ChatViewModel) {
     var text by remember { mutableStateOf("") }
+    var selectedMediaUri by remember { mutableStateOf<Uri?>(null) }
+    var isVideo by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    // Лаунчер для выбора изображения или видео из галереи
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val uri = result.data?.data
+                uri?.let {
+                    selectedMediaUri = it
+                    isVideo = isVideoFile(context, it)
+                }
+            }
+        }
+    )
+
     Row(
         Modifier
             .fillMaxWidth()
-            .height(60.dp))
+            .height(60.dp)
+    )
     {
         IconButton(
             modifier = Modifier
                 .weight(0.1f)
                 .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
-            onClick = {}
-        ) {
-                Icon(
-                    imageVector = Icons.Default.AddPhotoAlternate,
-                    contentDescription = "Send"
-                )
+            onClick = {
+
+                // Запуск галереи
+                val intent = Intent(Intent.ACTION_PICK).apply {
+                    type = "image/*"
+                }
+                launcher.launch(intent)
             }
+        ) {
+            Icon(
+                imageVector = Icons.Default.AddPhotoAlternate,
+                contentDescription = "Send"
+            )
+        }
 
         TextField(
             value = text,
@@ -262,19 +304,125 @@ fun Material_text_filed(chatViewModel: ChatViewModel){
             ),
             maxLines = 10,
 
-        )
+            )
         IconButton(
             modifier = Modifier
                 .weight(0.1f)
                 .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
             onClick = {
-                chatViewModel.sendMessage(text.toString())
+                chatViewModel.sendMessage(
+                    text.toString(),
+                    gifUrls = emptyList(),
+                    imageUrls = emptyList(),
+                    videoUrls = emptyList(),
+                    fileUrls = emptyList()
+                )
+                text = ""
             }
         ) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = "Send"
+            Icon(
+                imageVector = Icons.Default.Send,
+                contentDescription = "Send"
+            )
+        }
+
+        selectedMediaUri?.let { uri ->
+            if (isVideo) {
+                // Отображаем миниатюру видео
+                VideoThumbnail(uri = uri)
+            } else {
+                // Отображаем изображение
+                Image(
+                    painter = rememberAsyncImagePainter(uri),
+                    contentDescription = "Selected Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(top = 8.dp)
                 )
             }
+        }
     }
 }
+
+
+// Функция для проверки, является ли файл видео
+private fun isVideoFile(context: Context, uri: Uri): Boolean {
+    val contentResolver: ContentResolver = context.contentResolver
+    val type = contentResolver.getType(uri)
+    return type?.startsWith("video") == true
+}
+
+
+@Composable
+fun VideoThumbnail(uri: Uri) {
+    val context = LocalContext.current
+    var thumbnail by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+
+    LaunchedEffect(uri) {
+        thumbnail = withContext(Dispatchers.IO) {
+            MediaStore.Video.Thumbnails.getThumbnail(
+                context.contentResolver,
+                uri.lastPathSegment?.toLongOrNull() ?: 0,
+                MediaStore.Video.Thumbnails.MINI_KIND,
+                null
+            )
+        }
+    }
+
+    thumbnail?.let {
+        Image(
+            bitmap = it.asImageBitmap(),
+            contentDescription = "Video Thumbnail",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(top = 8.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun Choos_type_of_file(){
+
+    val tint = if (isSystemInDarkTheme()) Color(0xFFFFFFFF)
+    else Color(0xFF191C20)
+    val backgroundColor = if (isSystemInDarkTheme()) Color( 0xFF191C20)
+    else Color(0xFFFFFFFF)
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .height(50.dp)
+        .background(backgroundColor)
+    ){
+        IconButton(
+            modifier = Modifier
+                .weight(0.1f)
+                .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
+            onClick = {}
+        ) {
+            Icon(
+                imageVector = Icons.Default.UploadFile,
+                contentDescription = "Send",
+                tint = tint,
+                modifier = Modifier.size(30.dp)
+                )
+        }
+        Spacer(modifier = Modifier.widthIn(5.dp))
+
+        IconButton(
+            modifier = Modifier
+                .weight(0.1f)
+                .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
+            onClick = {}
+        ) {
+            Icon(
+                imageVector = Icons.Default.Image,
+                contentDescription = "Send",
+                tint = tint,
+                modifier = Modifier.size(30.dp)
+            )
+        }
+    }
+}
+

@@ -84,7 +84,9 @@ dependencies {
     implementation(libs.androidx.room.common)
     implementation (libs.androidx.fragment.ktx.v185)
     implementation(libs.foundation.layout.android)
-    implementation(libs.androidx.ui.test.android) // Убедитесь, что версия соответствует последней
+    implementation(libs.androidx.ui.test.android)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.storage) // Убедитесь, что версия соответствует последней
 
 
 

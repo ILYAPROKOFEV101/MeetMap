@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MeetMap"
         tools:targetApi="31">
-
+        
         <activity
             android:name=".SocialMap.SocialMapActivity"
             android:exported="false"

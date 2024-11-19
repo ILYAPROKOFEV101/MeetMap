@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.ilya.MeetingMap.SocialMap.DataModel.Messageformat
 import com.ilya.MeetingMap.SocialMap.DataModel.Messages
 import io.ktor.client.*
 import io.ktor.client.engine.cio.CIO
@@ -92,15 +93,17 @@ class ChatWebSocketService : Service() {
         }
     }
 
-    fun sendMessage(message: String) {
-
-        coroutineScope.launch {
-
-            if (open_session!!.isActive) {
-                open_session!!.send(Frame.Text(message))
-                Log.d(TAG, "Сообщение отправлено: $message")
-            } else {
-                Log.e(TAG, "Соединение не активно, переподключение...")
+    fun sendMessage(jsonMessage: String) {
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                if (open_session!!.isActive) {
+                    open_session!!.send(Frame.Text(jsonMessage))
+                    Log.d(TAG, "Сообщение отправлено: $jsonMessage")
+                } else {
+                    Log.e(TAG, "Соединение не активно, переподключение...")
+                }
+            } catch (e: Exception){
+                Log.d(TAG, "Error sending message: ${e.message}")
             }
         }
     }

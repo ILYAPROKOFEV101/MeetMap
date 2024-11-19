@@ -25,6 +25,6 @@ class MyDataProvider(context: Context) : DataProvider {
         }
     }
 
-    // ... other methods ...
+
 }
 

@@ -42,6 +42,7 @@ object PreferenceHelper {
     }
 
     fun getUserKey(context: Context): String? {
+       Log.d("getUserKey", "${getSharedPreferences(context).getString(KEY_USER_TEXT, "")}")
         return getSharedPreferences(context).getString(KEY_USER_TEXT, "")
     }
 

@@ -64,6 +64,8 @@ foundationLayoutAndroid = "1.7.0-alpha02"
 roomCommon = "2.6.1"
 foundationLayoutAndroidVersion = "1.6.8"
 uiTestAndroid = "1.7.0-alpha02"
+firebaseDatabase = "21.0.0"
+firebaseStorage = "21.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -138,6 +140,8 @@ androidx-foundation-layout-android = { group = "androidx.compose.foundation", na
 androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
 foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroidVersion" }
 androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

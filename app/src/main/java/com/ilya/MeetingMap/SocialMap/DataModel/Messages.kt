@@ -10,5 +10,9 @@ data class Messages(
     val messageTime: Long? = null,
     val key: String? = null,
     val senderUsername: String? = null,
+    val gifUrls: List<String> = emptyList(),
+    val imageUrls: List<String> = emptyList(),
+    val videoUrls: List<String> = emptyList(),
+    val fileUrls: List<String> = emptyList()
 
 )

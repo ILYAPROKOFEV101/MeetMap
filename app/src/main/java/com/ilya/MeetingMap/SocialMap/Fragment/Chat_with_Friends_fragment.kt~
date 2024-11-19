@@ -59,10 +59,10 @@ class Chat_with_Friends_fragment : Fragment() {
             setContent {
 
 
-                 val key = ""
+
                 val name = UID(userData = googleAuthUiClient.getSignedInUser())
                 val img = IMG(userData = googleAuthUiClient.getSignedInUser())
-                val uid = ID(userData = googleAuthUiClient.getSignedInUser())
+                val key = getUserKey(requireContext())
 
 
 
@@ -96,16 +96,14 @@ class Chat_with_Friends_fragment : Fragment() {
             )
 
 
-        val token = friendsViewModel.getFriendToken()
 
-        // 3. Pass the token
-        val dataProvider = MyDataProvider()
-
-        val retrievedToken = dataProvider.getToken() // Retrieve the token
-        Log.d("Save_token", "получаю токен: ${retrievedToken.toString()}")
+        var token  =   MyDataProvider(this.requireContext()).getToken() // Retrieve the token
+        Log.d("Save_token", "получаю токен: ${token.toString()}")
         val uid = ID(userData = googleAuthUiClient.getSignedInUser())
+        val name = UID(userData = googleAuthUiClient.getSignedInUser())
         val key = getUserKey(requireContext())
-        chatViewModel.connectToChat(retrievedToken.toString(), uid.toString(), key.toString())
+
+        chatViewModel.connectToChat(token.toString(), uid.toString(), key.toString(), name.toString())
     }
 
     override fun onStop() {
@@ -113,5 +111,6 @@ class Chat_with_Friends_fragment : Fragment() {
         requireContext().stopService(Intent(requireContext(), ChatWebSocketService::class.java))
         chatViewModel.disconnectFromChat()
     }
+    
 }
 

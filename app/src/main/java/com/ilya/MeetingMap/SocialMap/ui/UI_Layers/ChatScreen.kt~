@@ -44,7 +44,7 @@ fun ChatScreen(chatViewModel: ChatViewModel) {
                 placeholder = { Text("Введите сообщение") }
             )
             Button(onClick = {
-                chatViewModel.sendMessage(text, gifUrls = emptyList(), imageUrls = emptyList(), videoUrls = emptyList(), fileUrls = emptyList())
+                chatViewModel.sendMessage(text)
                 text = "" // Очищаем поле после отправки
             }) {
                 Text("Отправить")
