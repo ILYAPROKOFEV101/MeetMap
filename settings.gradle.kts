@@ -20,6 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MeetMap"
-include(":app")
-include(":mapmarker")
-include(":chatmodule")
+include(":androidApp")
