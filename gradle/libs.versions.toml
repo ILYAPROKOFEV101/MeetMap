@@ -17,6 +17,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxCoroutinesAndroid = "1.7.3"
 kotlinxCoroutinesCore = "1.8.0"
+kotlinxCoroutinesTest = "1.7.3"
 kotlinxSerializationJson = "1.6.0"
 kotlinxSerializationJsonVersion = "1.5.1"
 ktorClientAndroid = "2.0.0"
@@ -36,6 +37,7 @@ localbroadcastmanager = "1.1.0"
 loggingInterceptor = "4.9.1"
 material3Android = "1.2.1"
 materialVersion = "1.5.0"
+mockk = "1.13.5"
 navigationCompose = "2.7.7"
 lifecycleRuntimeComposeAndroid = "2.8.2"
 appcompat = "1.7.0"
@@ -48,6 +50,7 @@ playServicesLocation = "21.3.0"
 retrofit = "2.9.0"
 roomRuntime = "2.6.1"
 roomCompiler = "2.6.1"
+truth = "1.1.5"
 uiTextGoogleFonts = "1.6.8"
 firebaseCrashlyticsBuildtools = "3.0.2"
 transportRuntime = "3.3.0"
@@ -107,6 +110,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 konfetti-xml = { module = "nl.dionsegijn:konfetti-xml", version.ref = "konfettiXml" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 kotlinx-serialization-json-v160 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientAndroid" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientCio" }
@@ -120,6 +124,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 material-v150 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-v4120 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttpVersion" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
@@ -142,6 +147,7 @@ foundation-layout-android = { group = "androidx.compose.foundation", name = "fou
 androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
+truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

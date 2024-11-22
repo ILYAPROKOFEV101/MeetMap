@@ -192,6 +192,12 @@ dependencies {
     implementation("androidx.room:room-paging:$room_version")
     implementation (libs.androidx.core.splashscreen)
 
+    testImplementation (libs.kotlinx.coroutines.test)
+    testImplementation (libs.mockk)
+    testImplementation (libs.truth)
+
+
+
 
 
 }

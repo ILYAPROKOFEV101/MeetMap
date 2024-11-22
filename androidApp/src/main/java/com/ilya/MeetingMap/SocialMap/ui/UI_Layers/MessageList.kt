@@ -10,6 +10,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -82,12 +83,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.storage.FirebaseStorage
 import com.ilya.MeetingMap.R
+import com.ilya.MeetingMap.SocialMap.DATAServices.UploadService.UploadService
 import com.ilya.MeetingMap.SocialMap.DataModel.Messages
 import com.ilya.MeetingMap.SocialMap.ViewModel.ChatViewModel
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -96,6 +102,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+
 
 @Composable
 fun MessageList(chatViewModel: ChatViewModel, username: String, my_avatar: String, my_key: String) {
@@ -245,21 +252,16 @@ fun MessageCard(message: Messages, my_key: String, my_avatar: Painter, username:
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Material_text_filed(chatViewModel: ChatViewModel) {
+    val context = LocalContext.current // Получение текущего контекста
     var text by remember { mutableStateOf("") }
-    var selectedMediaUri by remember { mutableStateOf<Uri?>(null) }
-    var isVideo by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-
-    // Лаунчер для выбора изображения или видео из галереи
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
         onResult = { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val uri = result.data?.data
                 uri?.let {
-                    selectedMediaUri = it
-                    isVideo = isVideoFile(context, it)
+                    uploadToFirebase(it, context)
                 }
             }
         }
@@ -269,14 +271,12 @@ fun Material_text_filed(chatViewModel: ChatViewModel) {
         Modifier
             .fillMaxWidth()
             .height(60.dp)
-    )
-    {
+    ) {
         IconButton(
             modifier = Modifier
                 .weight(0.1f)
-                .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
+                .align(Alignment.CenterVertically),
             onClick = {
-
                 // Запуск галереи
                 val intent = Intent(Intent.ACTION_PICK).apply {
                     type = "image/*"
@@ -297,18 +297,17 @@ fun Material_text_filed(chatViewModel: ChatViewModel) {
                 .weight(0.7f)
                 .height(80.dp),
             colors = TextFieldDefaults.textFieldColors(
-                focusedIndicatorColor = Color.White, // Цвет индикатора при фокусе на поле (прозрачный - отключает индикатор)
-                unfocusedIndicatorColor = Color.White, // Цвет индикатора при потере фокуса на поле (прозрачный - отключает индикатор)
-                disabledIndicatorColor = Color.White, // Цвет индикатора, когда поле неактивно (прозрачный - отключает индикатор)
+                focusedIndicatorColor = Color.White,
+                unfocusedIndicatorColor = Color.White,
+                disabledIndicatorColor = Color.White,
                 containerColor = Color.White
             ),
-            maxLines = 10,
-
-            )
+            maxLines = 10
+        )
         IconButton(
             modifier = Modifier
                 .weight(0.1f)
-                .align(Alignment.CenterVertically), // Выравнивание по центру вертикально
+                .align(Alignment.CenterVertically),
             onClick = {
                 chatViewModel.sendMessage(
                     text.toString(),
@@ -325,26 +324,35 @@ fun Material_text_filed(chatViewModel: ChatViewModel) {
                 contentDescription = "Send"
             )
         }
-
-        selectedMediaUri?.let { uri ->
-            if (isVideo) {
-                // Отображаем миниатюру видео
-                VideoThumbnail(uri = uri)
-            } else {
-                // Отображаем изображение
-                Image(
-                    painter = rememberAsyncImagePainter(uri),
-                    contentDescription = "Selected Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(top = 8.dp)
-                )
-            }
-        }
     }
 }
 
+fun uploadToFirebase(uri: Uri, context: Context) {
+    val storageRef = FirebaseStorage.getInstance().reference
+    val fileName = uri.lastPathSegment ?: "file_${System.currentTimeMillis()}"
+    val fileRef = storageRef.child("uploads/$fileName")
+
+    // Добавление логов
+    Log.d("Upload", "Начало загрузки файла: $fileName")
+
+    fileRef.putFile(uri)
+        .addOnSuccessListener { taskSnapshot ->
+            Log.d("Upload", "Файл успешно загружен: ${taskSnapshot.metadata?.path}")
+            fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                Log.d("Upload", "Ссылка на файл: $downloadUri")
+                Toast.makeText(context, "Фото загружено!", Toast.LENGTH_SHORT).show()
+            }
+        }
+        .addOnFailureListener { exception ->
+            Log.e("Upload", "Ошибка загрузки файла: ${exception.message}")
+            Toast.makeText(context, "Ошибка загрузки: ${exception.message}", Toast.LENGTH_SHORT).show()
+        }
+        .addOnProgressListener { taskSnapshot ->
+            val progress =
+                (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toInt()
+            Log.d("Upload", "Прогресс загрузки: $progress%")
+        }
+}
 
 // Функция для проверки, является ли файл видео
 private fun isVideoFile(context: Context, uri: Uri): Boolean {

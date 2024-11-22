@@ -539,13 +539,20 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                         updateDistance(it)
 
                         // Установка обработчика кликов по маркерам
+
                         mMap.setOnMarkerClickListener { marker ->
-                            markerDataMap[marker]?.let { mapMarker ->
-                                showMarkerDialog(mapMarker)
-                                Log.d("MarkerData_new2", mapMarker.toString())
+                            val mapMarker = markerDataMap[marker]
+                            if (mapMarker != null) {
+                                Handler(Looper.getMainLooper()).post {
+                                    showMarkerDialog(mapMarker) // Диалог всегда открывается на главном потоке
+                                }
+                                Log.d("MarkerClick", "Marker clicked: ${marker.title}")
+                            } else {
+                                Log.w("MarkerClick", "No data found for marker: ${marker.title}")
                             }
-                            true
+                            true // Указывает, что событие обработано
                         }
+
 
                         // Установка обработчика кликов по карте
                         mMap.setOnMapClickListener { latLng ->
@@ -571,9 +578,6 @@ class Map_Activity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
             }, 200) // Задержка в 0.2 секунду перед выполнением кода
         }
     }
-
-
-
 
     private val markerList = mutableListOf<Marker>()  // Список для сохранения маркеров
 

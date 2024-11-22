@@ -112,7 +112,6 @@ class SocialMapActivity : FragmentActivity(), WebSocketListenerCallback{
     }
 
 
-
     override fun onStop() {
         super.onStop()
         val intent = Intent(this, WebSocketService::class.java)

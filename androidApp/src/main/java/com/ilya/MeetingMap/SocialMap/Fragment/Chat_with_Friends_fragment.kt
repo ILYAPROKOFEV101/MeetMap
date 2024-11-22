@@ -71,7 +71,12 @@ class Chat_with_Friends_fragment : Fragment() {
                         /*ChatScreen(
                                 chatViewModel = chatViewModel
                                 )*/
-                        MessageList(chatViewModel = chatViewModel, username = name.toString(), my_avatar = img.toString(), my_key = key.toString())
+                        MessageList(
+                            chatViewModel = chatViewModel,
+                            username = name.toString(),
+                            my_avatar = img.toString(),
+                            my_key = key.toString()
+                        )
                     }
                 }
             }
